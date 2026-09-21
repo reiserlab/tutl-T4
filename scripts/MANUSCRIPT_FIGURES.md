@@ -381,6 +381,11 @@ function directly with an explicit data root:
 addpath(genpath('src'));
 generate_manuscript_fig('main', struct('data_root', '/path/to/ttl_1DRF'));
 generate_manuscript_fig('supp', struct('data_root', '/path/to/ttl_1DRF'));
+% Defaults are the manuscript settings: per-cell position test (pool_test =
+% 'percell') and no FWHM bars (show_fwhm = false). Passing pool_test = 'pooled'
+% or show_fwhm = true produces comparison variants whose file names carry
+% '_pooledTest' / '_withFWHM'. batch_results.mat must carry flash_pitch_px
+% (rebuild with build_batch_results.m if generate_manuscript_fig_ef errors).
 ```
 
 The figure pipeline itself does not require CircStat — only the build step

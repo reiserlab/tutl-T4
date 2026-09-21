@@ -18,11 +18,12 @@ function fig_ef = generate_manuscript_fig_ef(axis_mode, opts)
 %                         by the local validation harness.
 %       .use_raw_traces - true for absolute voltage (default false)
 %       .show_fwhm      - draw FWHM bars on the depolarization panels
-%                         (default true)
-%       .pool_test      - 'pooled' (default): three-position pooled rank-sum
-%                         on all cell x position values; 'percell': each
-%                         cell's mean over the three positions, rank-sum on
-%                         cells
+%                         (default false = manuscript)
+%       .pool_test      - 'percell' (default = manuscript): each cell's mean
+%                         over the three positions, rank-sum on cells;
+%                         'pooled': three-position pooled rank-sum on all
+%                         cell x position values (treats within-cell
+%                         neighbours as independent; kept for comparison)
 %       .fwhm_method    - 'interp' (default): linear interpolation of the
 %                         half-max crossings, undefined (NaN) if a flank is
 %                         truncated; 'gauss': FWHM of a Gaussian fitted to the
@@ -40,8 +41,8 @@ if ~isfield(opts, 'data_root'),       opts.data_root      = '/Users/reiserm/Docu
 if ~isfield(opts, 'skip_export'),     opts.skip_export    = false; end
 if ~isfield(opts, 'stamp_path'),      opts.stamp_path     = ''; end
 if ~isfield(opts, 'use_raw_traces'),  opts.use_raw_traces = false; end
-if ~isfield(opts, 'show_fwhm'),       opts.show_fwhm      = true; end
-if ~isfield(opts, 'pool_test'),       opts.pool_test      = 'pooled'; end
+if ~isfield(opts, 'show_fwhm'),       opts.show_fwhm      = false; end      % manuscript setting
+if ~isfield(opts, 'pool_test'),       opts.pool_test      = 'percell'; end  % manuscript setting
 if ~isfield(opts, 'fwhm_method'),     opts.fwhm_method    = 'interp'; end
 
 %% ===================== Axis dispatch =====================================
@@ -85,6 +86,13 @@ fprintf('Loading: %s\n', res_file);
 S = load(res_file, 'results');
 results = S.results;
 fprintf('Loaded %d cells.\n', numel(results));
+% Refuse batch files built before the bar-flash pitch correction (they place the
+% three 1-px sessions on the wrong grid). Rebuild with scripts/build_batch_results.m.
+if ~isfield(results, 'flash_pitch_px') || any(cellfun(@isempty, {results.flash_pitch_px}))
+    error('generate_manuscript_fig_ef:OutdatedBatchFile', ...
+        ['%s lacks results(k).flash_pitch_px: it was built before the bar-flash pitch ' ...
+         'correction. Rebuild it with scripts/build_batch_results.m (batch_analyze_1DRF).'], res_file);
+end
 
 %% ===================== Constants =========================================
 FONT_NAME  = 'Helvetica';
@@ -376,8 +384,8 @@ end
 %% ===================== Export ============================================
 ts = datestr(now, 'yyyymmdd_HHMM');
 if USE_RAW_TRACES, raw_tag = '_absolute'; else, raw_tag = ''; end
-if ~opts.show_fwhm, raw_tag = [raw_tag '_noFWHM']; end
-if strcmpi(opts.pool_test, 'percell'), raw_tag = [raw_tag '_percell']; end
+if opts.show_fwhm, raw_tag = [raw_tag '_withFWHM']; end                 % tags mark departures from the manuscript defaults
+if strcmpi(opts.pool_test, 'pooled'), raw_tag = [raw_tag '_pooledTest']; end
 if strcmpi(opts.fwhm_method, 'gauss'), raw_tag = [raw_tag '_gaussFWHM']; end
 pdf_file = fullfile(out_dir, sprintf('%s%s_%s.pdf', out_tag, raw_tag, ts));
 png_file = fullfile(out_dir, sprintf('%s%s_%s.png', out_tag, raw_tag, ts));
