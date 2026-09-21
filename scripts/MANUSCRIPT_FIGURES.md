@@ -75,13 +75,17 @@ The pipeline expects the following layout under `DATA_ROOT`:
 └── manuscript_figures/                                ← output: PDFs/PNGs land here (auto-created)
 ```
 
-The minimum set of files you need on disk to **just regenerate the figures**:
+The files you need on disk to regenerate the figures:
 - `<DATA_ROOT>/population_results/batch_results.mat`
 - `<DATA_ROOT>/pre-bar-flash/population_results/batch_results_pre_bf.mat`
+- the raw recording folders (`<DATA_ROOT>/<session>/` and
+  `<DATA_ROOT>/pre-bar-flash/{control,ttl}/{ON,OFF}/<session>/`)
 
-Both are produced by `src/analysis/protocol2/batch_analyze_1DRF.m` and the
-existing pre-bar-flash pipeline.  If you have copies of these two `.mat`
-files, the figures regenerate without needing the raw recordings.
+The two `.mat` files are produced by `src/analysis/protocol2/batch_analyze_1DRF.m`
+and `batch_analyze_pre_bar_flash.m`.  The raw folders are still required: the
+bar-sweep figure reads the raw logs to build its ring-of-traces cache (first run
+per speed) and to compute the membrane-potential panel on every run, and the
+square-flash figure (`generate_supp_fig_rf.m`) parses the raw flash data.
 
 The `batch_results.mat` must contain the M6-aligned fields:
 `pd_flash_m6_aligned`, `ortho_flash_m6_aligned`, `centroid_m6_rounded`,
@@ -137,13 +141,16 @@ ring + summaries).
 ## 4. Analysis pipeline — flash sub-figure (`generate_manuscript_fig_ef.m`)
 
 ### 4.1 Trace alignment (M6 centroid)
-Each cell's 11 flash traces (one per spatial position) are temporally aligned
-to the M6 centroid before averaging across cells.  Alignment is precomputed
-and stored in `batch_results.results(k).pd_flash_m6_aligned` and
-`.ortho_flash_m6_aligned`.  M6 = the centroid of the cell's depolarization
-across the **6th** (central) flash position; reindexing puts that centroid at
-a fixed sample for every cell.  Computed by `compute_m6_centroid` +
-`reindex_to_peak` in `src/analysis/protocol2/`.
+Each cell's 11 flash traces (one per spatial position) are **spatially**
+aligned before averaging across cells: the 68%-area centroid of the cell's
+amplitude-by-position profile (rounded to the nearest position, "M6") is moved
+to the central row 6, and the traces are reindexed accordingly.  Alignment is
+precomputed and stored in `batch_results.results(k).pd_flash_m6_aligned` and
+`.ortho_flash_m6_aligned`, computed by `compute_m6_centroid` +
+`reindex_to_peak` in `src/analysis/protocol2/`.  Positions are on a common
+2-pixel (2.5 deg) grid; the three sessions recorded at 1-pixel spacing
+(`results(k).flash_pitch_px == 1`) contribute every second stimulus and only
+to the central grid rows (`reindex_to_peak(..., step = 2)`).
 
 ### 4.2 PD-on-left ordering (`axis_mode='pd'` only)
 Code stores positions ND→PD (1…11).  The PD branch of the function flips the
@@ -374,6 +381,11 @@ function directly with an explicit data root:
 addpath(genpath('src'));
 generate_manuscript_fig('main', struct('data_root', '/path/to/ttl_1DRF'));
 generate_manuscript_fig('supp', struct('data_root', '/path/to/ttl_1DRF'));
+% Defaults are the manuscript settings: per-cell position test (pool_test =
+% 'percell') and no FWHM bars (show_fwhm = false). Passing pool_test = 'pooled'
+% or show_fwhm = true produces comparison variants whose file names carry
+% '_pooledTest' / '_withFWHM'. batch_results.mat must carry flash_pitch_px
+% (rebuild with build_batch_results.m if generate_manuscript_fig_ef errors).
 ```
 
 The figure pipeline itself does not require CircStat — only the build step

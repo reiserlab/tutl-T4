@@ -7,4 +7,5 @@
 DATA_ROOT = '/Users/reiserm/Documents/ttl_1DRF';   % <-- edit for your setup
 
 addpath(genpath(fullfile(fileparts(mfilename('fullpath')), '..', 'src')));
-generate_manuscript_fig('supp', struct('data_root', DATA_ROOT));
+% Manuscript settings (also the defaults since 2026-09-21): per-cell position test, no FWHM bars.
+generate_manuscript_fig('supp', struct('data_root', DATA_ROOT, 'pool_test', 'percell', 'show_fwhm', false));

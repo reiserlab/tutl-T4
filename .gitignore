@@ -24,3 +24,6 @@ session-notes.md
 # Quarto site build outputs
 site/_site/
 site/.quarto/
+
+# local AI review artefacts
+.codex-review/

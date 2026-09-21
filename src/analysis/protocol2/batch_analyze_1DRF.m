@@ -49,6 +49,9 @@ function results = batch_analyze_1DRF(data_root, opts)
 %       .ortho_centroid_m6_rounded  - integer M6 centroid (1..11) on ortho axis
 %       .pd_flash_m6_aligned        - 11xN M6-aligned flash traces, PD axis
 %       .ortho_flash_m6_aligned     - 11xN M6-aligned flash traces, ortho axis
+%       .flash_pitch_px    - bar-flash position pitch in arena px (2, or 1 for
+%                            the three Oct-2025 sessions); M6-aligned traces
+%                            are always on the 2-px grid
 %       .dsi_vector        - vector-sum direction selectivity index (manuscript)
 %
 %   FIGURES GENERATED:
@@ -125,8 +128,8 @@ function results = batch_analyze_1DRF(data_root, opts)
                 results(end + 1) = r; %#ok<AGROW>
             end
 
-            fprintf('  -> %s | PD: %.0f° | %s\n', ...
-                r.group, r.pd_direction, r.strain);
+            fprintf('  -> %s | PD: %.0f° | %s | flash pitch %d px\n', ...
+                r.group, r.pd_direction, r.strain, r.flash_pitch_px);
 
         catch ME
             fprintf('  ERROR: %s\n', ME.message);
@@ -292,6 +295,12 @@ function r = process_single_cell(exp_folder, Tbl, opts)
         pd_info.ortho_flash_col, pd_info.ortho_pos_order, bl_samples);
 
     % --- M6 alignment for manuscript figures (68%-area centroid -> row 6) ---
+    % Bar-flash pitch is 2 px in all sessions except three Oct-23 sessions
+    % recorded at 1 px. Every cell is placed on a common 2-px (2.5 deg)
+    % grid: 1-px cells contribute every second stimulus to rows 4..8 only.
+    r.flash_pitch_px = read_flash_pitch(exp_folder);
+    step = 2 / r.flash_pitch_px;                 % 1 (2-px) or 2 (1-px)
+
     pd_peaks    = compute_pos_peak_amplitudes(mean_slow_bf, ...
         pd_info.bar_flash_col,   pd_info.pos_order,       bl_samples);
     ortho_peaks = compute_pos_peak_amplitudes(mean_slow_bf, ...
@@ -299,12 +308,33 @@ function r = process_single_cell(exp_folder, Tbl, opts)
 
     m6_pd                       = compute_m6_centroid(max(pd_peaks, 0), 0.68);
     r.centroid_m6_rounded       = m6_pd.centroid_int;
-    r.pd_flash_m6_aligned       = reindex_to_peak(r.pd_flash_bl, r.centroid_m6_rounded);
+    r.pd_flash_m6_aligned       = reindex_to_peak(r.pd_flash_bl, r.centroid_m6_rounded, step);
 
     m6_ortho                    = compute_m6_centroid(max(ortho_peaks, 0), 0.68);
     r.ortho_centroid_m6_rounded = m6_ortho.centroid_int;
-    r.ortho_flash_m6_aligned    = reindex_to_peak(r.ortho_flash_bl, r.ortho_centroid_m6_rounded);
+    r.ortho_flash_m6_aligned    = reindex_to_peak(r.ortho_flash_bl, r.ortho_centroid_m6_rounded, step);
 
+end
+
+
+function pitch = read_flash_pitch(exp_folder)
+% READ_FLASH_PITCH  Bar-flash position pitch (arena px) from the FLASHES pattern.
+%
+%   Frames 2 and 3 of Patterns/0011_*FLASHES*.mat are positions 1 and 2 of
+%   the first (cardinal) bar orientation; the distance between their bar
+%   centroids is the pitch (1 or 2 px). Frame 1 is the blank frame.
+
+    d = dir(fullfile(exp_folder, 'Patterns', '*FLASHES*.mat'));
+    S = load(fullfile(d(1).folder, d(1).name), 'pattern');
+    c = zeros(1, 2);
+    for k = 1:2
+        fr = S.pattern.Pats(:, :, k + 1);
+        [~, cols] = find(fr ~= mode(fr(:)));
+        c(k) = mean(cols);
+    end
+    pitch = round(abs(c(2) - c(1)));
+    assert(pitch == 1 || pitch == 2, ...
+        'read_flash_pitch:UnexpectedPitch', 'Unexpected bar-flash pitch %g px', pitch);
 end
 
 

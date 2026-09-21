@@ -17,6 +17,17 @@ function fig_ef = generate_manuscript_fig_ef(axis_mode, opts)
 %                         .mat file and return without plotting.  Used
 %                         by the local validation harness.
 %       .use_raw_traces - true for absolute voltage (default false)
+%       .show_fwhm      - draw FWHM bars on the depolarization panels
+%                         (default false = manuscript)
+%       .pool_test      - 'percell' (default = manuscript): each cell's mean
+%                         over the three positions, rank-sum on cells;
+%                         'pooled': three-position pooled rank-sum on all
+%                         cell x position values (treats within-cell
+%                         neighbours as independent; kept for comparison)
+%       .fwhm_method    - 'interp' (default): linear interpolation of the
+%                         half-max crossings, undefined (NaN) if a flank is
+%                         truncated; 'gauss': FWHM of a Gaussian fitted to the
+%                         amplitude-by-position profile (handles truncation)
 %
 %   Variable naming convention inside this function: per-cell data
 %   matrices are c_dep / t_dep / c_hyp / t_hyp (T4 / ON cells) and
@@ -30,6 +41,9 @@ if ~isfield(opts, 'data_root'),       opts.data_root      = '/Users/reiserm/Docu
 if ~isfield(opts, 'skip_export'),     opts.skip_export    = false; end
 if ~isfield(opts, 'stamp_path'),      opts.stamp_path     = ''; end
 if ~isfield(opts, 'use_raw_traces'),  opts.use_raw_traces = false; end
+if ~isfield(opts, 'show_fwhm'),       opts.show_fwhm      = false; end      % manuscript setting
+if ~isfield(opts, 'pool_test'),       opts.pool_test      = 'percell'; end  % manuscript setting
+if ~isfield(opts, 'fwhm_method'),     opts.fwhm_method    = 'interp'; end
 
 %% ===================== Axis dispatch =====================================
 switch lower(axis_mode)
@@ -72,6 +86,13 @@ fprintf('Loading: %s\n', res_file);
 S = load(res_file, 'results');
 results = S.results;
 fprintf('Loaded %d cells.\n', numel(results));
+% Refuse batch files built before the bar-flash pitch correction (they place the
+% three 1-px sessions on the wrong grid). Rebuild with scripts/build_batch_results.m.
+if ~isfield(results, 'flash_pitch_px') || any(cellfun(@isempty, {results.flash_pitch_px}))
+    error('generate_manuscript_fig_ef:OutdatedBatchFile', ...
+        ['%s lacks results(k).flash_pitch_px: it was built before the bar-flash pitch ' ...
+         'correction. Rebuild it with scripts/build_batch_results.m (batch_analyze_1DRF).'], res_file);
+end
 
 %% ===================== Constants =========================================
 FONT_NAME  = 'Helvetica';
@@ -141,7 +162,7 @@ if USE_RAW_TRACES
     fprintf('Reconstructing absolute-voltage traces from baselines...\n');
     for k = 1:numel(results)
         r = results(k);
-        bl_aligned = reindex_to_peak(r.(baseline_field), r.(centroid_field));
+        bl_aligned = reindex_to_peak(r.(baseline_field), r.(centroid_field), 2 / r.flash_pitch_px);
         results(k).(flash_field) = r.(flash_field) + bl_aligned;
     end
     Y_LABEL = 'mV';
@@ -178,10 +199,18 @@ if do_flip
 end
 
 %% ===================== Pooled rank-sum ===================================
-[dep_pp,     pool_centers] = compute_pooled_ranksum(c_dep,     t_dep);
-[hyp_pp,     ~]            = compute_pooled_ranksum(c_hyp,     t_hyp);
-[off_dep_pp, ~]            = compute_pooled_ranksum(off_c_dep, off_t_dep);
-[off_hyp_pp, ~]            = compute_pooled_ranksum(off_c_hyp, off_t_hyp);
+[dep_pp,     pool_centers] = compute_pooled_ranksum(c_dep,     t_dep,     opts.pool_test);
+[hyp_pp,     ~]            = compute_pooled_ranksum(c_hyp,     t_hyp,     opts.pool_test);
+[off_dep_pp, ~]            = compute_pooled_ranksum(off_c_dep, off_t_dep, opts.pool_test);
+[off_hyp_pp, ~]            = compute_pooled_ranksum(off_c_hyp, off_t_hyp, opts.pool_test);
+fprintf('\nPooled test (%s), p per pool centre %s:\n', opts.pool_test, mat2str(pool_centers));
+fprintf('  %s T4 dep:  %s\n', diag_label, mat2str(round(dep_pp, 3)));
+fprintf('  %s T4 hyp:  %s\n', diag_label, mat2str(round(hyp_pp, 3)));
+fprintf('  %s T5 dep:  %s\n', diag_label, mat2str(round(off_dep_pp, 3)));
+fprintf('  %s T5 hyp:  %s\n', diag_label, mat2str(round(off_hyp_pp, 3)));
+fprintf('Cells per grid position (ctrl/tutl), positions %s:\n', mat2str(positions));
+fprintf('  T4: %s / %s\n', mat2str(sum(~isnan(c_dep), 1)),     mat2str(sum(~isnan(t_dep), 1)));
+fprintf('  T5: %s / %s\n', mat2str(sum(~isnan(off_c_dep), 1)), mat2str(sum(~isnan(off_t_dep), 1)));
 
 %% ===================== STAMP GATE (validation only) =====================
 if ~isempty(opts.stamp_path)
@@ -278,8 +307,10 @@ dep_st_t4 = draw_amp_line(ax, positions, c_dep, t_dep, ...
 draw_pooled_asterisks(ax, pool_centers, dep_pp, dep_st_t4, STAT_COLOR, FONT_STAT);
 format_amp(ax, YLIM_AMP_DEP, FONT_AX, false, false);
 ylabel(ax, 'mV', 'FontSize', FONT_LABEL);
-add_fwhm_bars(ax, positions, dep_st_t4, COL_T4.ctrl_line, COL_T4.ttl_line, ...
-    YLIM_AMP_DEP, FONT_STAT, TTL_TEX, c_dep, t_dep);
+if opts.show_fwhm
+    add_fwhm_bars(ax, positions, dep_st_t4, COL_T4.ctrl_line, COL_T4.ttl_line, ...
+        YLIM_AMP_DEP, FONT_STAT, TTL_TEX, c_dep, t_dep, [diag_label ' T4'], opts.fwhm_method);
+end
 
 % T5 (OFF) depolarization
 ax = axes(fig_ef, 'Position', [AMP_T5_L, PD_DEP_Y, AMP_W, PD_DEP_H]);
@@ -288,8 +319,10 @@ dep_st_t5 = draw_amp_line(ax, positions, off_c_dep, off_t_dep, ...
     COL_T5.ctrl_fill, COL_T5.ttl_fill, ALPHA_AMP);
 draw_pooled_asterisks(ax, pool_centers, off_dep_pp, dep_st_t5, STAT_COLOR, FONT_STAT);
 format_amp(ax, YLIM_AMP_DEP, FONT_AX, false, true);
-add_fwhm_bars(ax, positions, dep_st_t5, COL_T5.ctrl_line, COL_T5.ttl_line, ...
-    YLIM_AMP_DEP, FONT_STAT, TTL_TEX, off_c_dep, off_t_dep);
+if opts.show_fwhm
+    add_fwhm_bars(ax, positions, dep_st_t5, COL_T5.ctrl_line, COL_T5.ttl_line, ...
+        YLIM_AMP_DEP, FONT_STAT, TTL_TEX, off_c_dep, off_t_dep, [diag_label ' T5'], opts.fwhm_method);
+end
 
 % T4 (ON) hyperpolarization
 ax = axes(fig_ef, 'Position', [AMP_T4_L, PD_HYP_Y, AMP_W, PD_HYP_H]);
@@ -351,6 +384,9 @@ end
 %% ===================== Export ============================================
 ts = datestr(now, 'yyyymmdd_HHMM');
 if USE_RAW_TRACES, raw_tag = '_absolute'; else, raw_tag = ''; end
+if opts.show_fwhm, raw_tag = [raw_tag '_withFWHM']; end                 % tags mark departures from the manuscript defaults
+if strcmpi(opts.pool_test, 'pooled'), raw_tag = [raw_tag '_pooledTest']; end
+if strcmpi(opts.fwhm_method, 'gauss'), raw_tag = [raw_tag '_gaussFWHM']; end
 pdf_file = fullfile(out_dir, sprintf('%s%s_%s.pdf', out_tag, raw_tag, ts));
 png_file = fullfile(out_dir, sprintf('%s%s_%s.png', out_tag, raw_tag, ts));
 
@@ -646,13 +682,22 @@ function format_amp(ax, y_lim, font_ax, show_xlabel, hide_yticklabels)
 end
 
 
-function [pool_pvals, pool_centers] = compute_pooled_ranksum(ctrl_mat, ttl_mat)
+function [pool_pvals, pool_centers] = compute_pooled_ranksum(ctrl_mat, ttl_mat, pool_test)
+% 'pooled'  : all cell x position values of the three positions (manuscript)
+% 'percell' : each cell's mean over the three positions, one value per cell
+    if nargin < 3, pool_test = 'pooled'; end
     pool_centers = -4:4;
     pool_pvals = NaN(1, 9);
     for p = 1:9
         cols = p:p+2;
-        c = ctrl_mat(:, cols); c = c(:); c = c(~isnan(c));
-        t = ttl_mat(:, cols);  t = t(:); t = t(~isnan(t));
+        c = ctrl_mat(:, cols);
+        t = ttl_mat(:, cols);
+        if strcmpi(pool_test, 'percell')
+            c = mean(c, 2, 'omitnan');
+            t = mean(t, 2, 'omitnan');
+        end
+        c = c(:); c = c(~isnan(c));
+        t = t(:); t = t(~isnan(t));
         if numel(c) >= 2 && numel(t) >= 2
             pool_pvals(p) = ranksum(c, t);
         end
@@ -693,6 +738,9 @@ end
 
 
 function [fw, left_x, right_x] = compute_fwhm_positions(positions, mean_vals)
+% Linear-interpolated half-max crossings. If a flank never falls to
+% half-max within the mapped positions the FWHM is undefined (truncated)
+% and NaN is returned, so truncated cells drop out of the per-cell test.
     fw = NaN; left_x = NaN; right_x = NaN;
     valid = ~isnan(mean_vals);
     if sum(valid) < 3, return; end
@@ -706,32 +754,65 @@ function [fw, left_x, right_x] = compute_fwhm_positions(positions, mean_vals)
             left_x = pos_v(j-1) + frac * (pos_v(j) - pos_v(j-1)); break;
         end
     end
-    if isnan(left_x), left_x = pos_v(1); end
+    if isnan(left_x), return; end
     for j = pk_idx:numel(val_v)-1
         if val_v(j+1) <= half_max
             frac = (half_max - val_v(j+1)) / (val_v(j) - val_v(j+1));
             right_x = pos_v(j+1) - frac * (pos_v(j+1) - pos_v(j)); break;
         end
     end
-    if isnan(right_x), right_x = pos_v(end); end
+    if isnan(right_x), left_x = NaN; return; end
     fw = right_x - left_x;
 end
 
 
-function fwhm_vec = compute_percell_fwhm(positions, amp_mat)
+function [fw, left_x, right_x] = compute_fwhm_gauss(positions, vals)
+% FWHM of a single Gaussian A*exp(-(x-mu)^2/(2 sigma^2)) fitted (least squares,
+% fminsearch) to the amplitude-by-position profile; needs >= 4 valid points.
+% Returns NaN if the fit runs to an implausible width (sigma > 10 or < 0.3 grid
+% positions, i.e. FWHM > ~59 deg or < ~1.8 deg).
+    fw = NaN; left_x = NaN; right_x = NaN;
+    ok = ~isnan(vals);
+    if sum(ok) < 4, return; end
+    x = positions(ok); y = vals(ok);
+    [pk, i_pk] = max(y);
+    if pk <= 0, return; end
+    cost = @(p) sum((y - p(1) * exp(-(x - p(2)).^2 / (2 * p(3)^2))).^2);
+    p = fminsearch(cost, [pk, x(i_pk), 2], optimset('Display', 'off', 'TolX', 1e-4, 'TolFun', 1e-6));
+    sigma = abs(p(3));
+    if sigma > 10 || sigma < 0.3, return; end
+    fw = 2 * sqrt(2 * log(2)) * sigma;
+    left_x = p(2) - fw / 2; right_x = p(2) + fw / 2;
+end
+
+
+function [fw, left_x, right_x] = compute_fwhm_any(positions, vals, method)
+    if strcmpi(method, 'gauss')
+        [fw, left_x, right_x] = compute_fwhm_gauss(positions, vals);
+    else
+        [fw, left_x, right_x] = compute_fwhm_positions(positions, vals);
+    end
+end
+
+
+function fwhm_vec = compute_percell_fwhm(positions, amp_mat, method)
+    if nargin < 3, method = 'interp'; end
     n = size(amp_mat, 1); fwhm_vec = NaN(n, 1);
     for k = 1:n
-        [fw, ~, ~] = compute_fwhm_positions(positions, amp_mat(k, :));
+        [fw, ~, ~] = compute_fwhm_any(positions, amp_mat(k, :), method);
         fwhm_vec(k) = fw;
     end
 end
 
 
 function add_fwhm_bars(ax, positions, stats, col_c, col_t, y_lim, font_stat, ~, ...
-    ctrl_dep_mat, ttl_dep_mat)
+    ctrl_dep_mat, ttl_dep_mat, label, method)
+    if nargin < 11, label = ''; end
+    if nargin < 12, method = 'interp'; end
+    DEG_PER_POS = 2.5;   % 2-px grid, 1.25 deg/px
     ctrl_mn = [stats.mean_ctrl]; ttl_mn = [stats.mean_ttl];
-    [fw_c, lx_c, rx_c] = compute_fwhm_positions(positions, ctrl_mn);
-    [fw_t, lx_t, rx_t] = compute_fwhm_positions(positions, ttl_mn);
+    [fw_c, lx_c, rx_c] = compute_fwhm_any(positions, ctrl_mn, method);
+    [fw_t, lx_t, rx_t] = compute_fwhm_any(positions, ttl_mn, method);
     fwhm_y_base = y_lim(1) + 0.5; fwhm_y_gap = 1.0;
     if ~isnan(fw_c)
         y_c = fwhm_y_base;
@@ -745,10 +826,11 @@ function add_fwhm_bars(ax, positions, stats, col_c, col_t, y_lim, font_stat, ~, 
         plot(ax, [lx_t lx_t], y_t+[-0.3 0.3], '-', 'Color', col_t, 'LineWidth', 1.0);
         plot(ax, [rx_t rx_t], y_t+[-0.3 0.3], '-', 'Color', col_t, 'LineWidth', 1.0);
     end
-    cv_fw = compute_percell_fwhm(positions, ctrl_dep_mat);
-    tv_fw = compute_percell_fwhm(positions, ttl_dep_mat);
+    cv_fw = compute_percell_fwhm(positions, ctrl_dep_mat, method);
+    tv_fw = compute_percell_fwhm(positions, ttl_dep_mat, method);
     cv_fw = cv_fw(~isnan(cv_fw)); tv_fw = tv_fw(~isnan(tv_fw));
     p_str = '';
+    p_fw = NaN;
     if numel(cv_fw) >= 2 && numel(tv_fw) >= 2
         p_fw = ranksum(cv_fw, tv_fw);
         if p_fw < 0.001,     p_str = ' ***';
@@ -760,6 +842,12 @@ function add_fwhm_bars(ax, positions, stats, col_c, col_t, y_lim, font_stat, ~, 
         ['FWHM' p_str], ...
         'FontSize', font_stat, 'FontWeight', 'bold', ...
         'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
+    fprintf(['FWHM (%s) %s: group-mean curve ctrl %.1f deg, tutl %.1f deg; per-cell ' ...
+             'median ctrl %.1f deg (n=%d), tutl %.1f deg (n=%d), rank-sum p = %.3f ' ...
+             '(cells without a defined width excluded)\n'], method, label, ...
+        fw_c * DEG_PER_POS, fw_t * DEG_PER_POS, ...
+        median(cv_fw) * DEG_PER_POS, numel(cv_fw), ...
+        median(tv_fw) * DEG_PER_POS, numel(tv_fw), p_fw);
 end
 
 

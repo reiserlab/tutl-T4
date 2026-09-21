@@ -33,6 +33,8 @@ function results = batch_analyze_pre_bar_flash(data_root, opts)
 %       .date_str          - Experiment date string
 %       .strain            - Strain from metadata
 %       .frame             - Frame number from metadata
+%       .metadata_mismatch - true if Strain / Frame in metadata disagree with
+%                            the directory-based classification (warning issued)
 %       .is_on             - true for ON/T4 cells
 %       .is_ttl            - true for TTL cells
 %       .group             - 'on_control', 'on_ttl', 'off_control', 'off_ttl'
@@ -205,6 +207,25 @@ function r = process_single_cell(exp_folder, Tbl, opts, ei)
         r.group = 'off_control';
     else
         r.group = 'off_ttl';
+    end
+
+    % --- Cross-check the directory-based classification against metadata ---
+    %   (a) genotype: when Strain explicitly names 'ttl' or 'control' it must
+    %       agree with the ttl/ vs control/ folder (summer sessions carry the
+    %       uninformative '42F06_T4T5' and are not checked);
+    %   (b) polarity: the RF frame from the localisation pattern lies in the
+    %       bright half (> 129, the threshold used by batch_analyze_1DRF) iff
+    %       the folder is under ON/.
+    %   Warn only; the flag is stored so mismatches can be listed from the results.
+    strain_l = lower(string(metadata.Strain));
+    strain_informative = contains(strain_l, 'ttl') || contains(strain_l, 'control');
+    geno_mismatch = strain_informative && (contains(strain_l, 'ttl') ~= r.is_ttl);
+    pol_mismatch  = isnumeric(metadata.Frame) && ((metadata.Frame > 129) ~= r.is_on);
+    r.metadata_mismatch = geno_mismatch || pol_mismatch;
+    if r.metadata_mismatch
+        warning('batch_analyze_pre_bar_flash:MetadataMismatch', ...
+            '%s filed as %s but metadata says Strain=%s, Frame=%g -- check the folder', ...
+            date_str, r.group, string(metadata.Strain), metadata.Frame);
     end
 
     % --- Parse bar sweep data (pre-bar-flash protocol) ---
