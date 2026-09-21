@@ -1,0 +1,54 @@
+---
+title: "Electrophysiology Experiments"
+---
+
+This documentation covers patch electrophysiology experiments using the G4 LED arena in the Reiser Lab at HHMI's Janelia Research Campus. Experiments were performed by **Jin Yong Park** of PTR in 2024 and 2025.
+
+::: {.callout-tip}
+### New to these experiments?
+Start with the [Rig Specs](ephys_rig_specs.qmd) page for hardware and software requirements. Then jump to the **Quickstart** for the protocol you need — each has a prerequisites checklist, experiment workflow, and links to all deep-dive guides.
+:::
+
+## Protocols
+
+### [Nested RF Protocol](ephys_nested_rf.qmd)
+
+Created in late 2024–2025 to characterise the receptive field structure and direction selectivity of T4/T5 visual neurons in *Drosophila*[^2]. Part of a collaboration with the Zipursky lab at UCLA. Based on an earlier protocol by **Eyal Gruntman** in the Reiser lab[^1].
+
+This is a two-part protocol:
+
+- **Protocol 1** — coarse receptive field mapping using flashing squares on a grid
+- **Protocol 2** — high-resolution RF mapping and direction selectivity using moving bars and small flashes, targeted to the RF location found in P1
+
+See the [Nested RF Quickstart](ephys_nested_rf.qmd) for a prerequisites checklist, experiment workflow, and links to all deep-dive pages.
+
+### [DS Probe Protocol](ephys_ds_probe_protocol.qmd)
+
+Created in 2024 to investigate directionally selective responses in less well characterised cell types predicted to have direction selectivity based on dendritic synapse positioning. This analysis was spearheaded by **Judith Hoeller** of the Romani lab at Janelia.
+
+## Shared resources
+
+- [Rig Specs](ephys_rig_specs.qmd) — G4 arena hardware, panel configuration, and calibration
+- [G4 Software & GUIs](/resources.qmd#g4-software) — pattern generator, experiment designer, and experiment conductor tools
+
+## Code availability
+
+- Nested RF Protocol: [nested_RF_stimulus](https://github.com/reiserlab/tutl-T4) repository. This code was cloned locally onto the computer for the G4 electrophysiology rig here: `C:\matlabroot\G4_Protocols\nested_RF_stimulus\`.
+- DS Probe Protocol: [DS_probe_protocol](https://github.com/leburnett/DS_probe_protocol) repository.
+
+Running these experiments requires the user to have the [G4_Display_Tools](https://github.com/JaneliaSciComp/G4_Display_Tools) repository downloaded locally too.
+
+## Data availability
+
+The data from the Nested RF experiments can be found on the Reiser Lab prfs drive here: `smb://prfs.hhmi.org/reiserlab/burnettl/Ephys_experiments/nested_RF_stimulus/DATA`. The data is then further organised based on sub-type of experiment grouped in the same way as the [Experiment Log](/Ephys/ephys_nested_rf_exp_log.qmd).
+
+The raw data is also found on the computer in the Ephys rig room within the folder `C:\matlabroot\G4_Protocols\nested_RF_protocol2\data`.
+
+Please see the following [page](ephys_nested_rf_data_structure.qmd) for details on how the data is saved and stored.
+
+::: {.callout-note}
+The data within the folder `1DRF` contains <b>duplicates</b> of data in other folders. The curated folder contains a subset of experiments that were performed with the same experimental protocol. This data was selected to be used to make the main paper figure for the UCLA collaboration.
+:::
+
+[^1]: Gruntman, E., Romani, S. & Reiser, M.B. Simple integration of fast excitation and offset, delayed inhibition computes directional selectivity in Drosophila . Nat Neurosci 21, 250–257 (2018). https://doi.org/10.1038/s41593-017-0046-4
+[^2]: Sanfilippo, P., Kim, A.J., Bhukel, A., Yoo, J., Mirshahidi, P.S., Pandey, V., Bevir, H., Yuen, A., Mirshahidi, P.S.,  Guo, P., Li, H.S., Wohlschlegel, J.A., Aso, Y., Zipursky, S.L. (2024) Mapping of multiple neurotransmitter receptor subtypes and distinct protein complexes to the connectome. Neuron, https://doi.org/10.1016/j.neuron.2023.12.014.

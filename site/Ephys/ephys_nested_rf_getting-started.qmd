@@ -1,0 +1,110 @@
+---
+title: "Installation & Setup"
+---
+
+This page covers the full installation and configuration process for the Nested RF Protocol. For a brief prerequisites checklist, see the [Quickstart](ephys_nested_rf.qmd) page. For details on the physical rig setup and arena specifications, see the [Rig Specs](ephys_rig_specs.qmd) page.
+
+## System requirements
+
+| Requirement | Details |
+|:------------|:--------|
+| Operating system | Windows (for the experiment rig computer) |
+| MATLAB | R2023a or later |
+| G4 LED arena | Connected and powered on (see [Rig Specs](ephys_rig_specs.qmd)) |
+: {.bordered}
+
+## Software dependencies
+
+You need three software packages installed:
+
+### 1. nested_RF_stimulus repository
+
+Clone the repository to the rig computer:
+
+```bash
+git clone https://github.com/reiserlab/tutl-T4.git C:\matlabroot\G4_Protocols\nested_RF_stimulus
+```
+
+### 2. G4_Display_Tools
+
+Clone or download the G4_Display_Tools repository from GitHub:
+
+```bash
+git clone https://github.com/JaneliaSciComp/G4_Display_Tools.git
+```
+
+Follow the installation instructions in the G4_Display_Tools README to configure the toolbox. This provides the `PanelsController`, `G4_experiment_conductor`, `G4_experiment_designer`, and data processing functions used throughout the protocol.
+
+### 3. Circular Statistics Toolbox
+
+Install the Circular Statistics Toolbox from the MATLAB File Exchange:
+
+1. In MATLAB, go to Home → Add-Ons → Get Add-Ons
+2. Search for "Circular Statistics Toolbox"
+3. Install the toolbox by Philipp Berens
+
+This is required for direction selectivity analysis (specifically the `circ_vmpar` function for von Mises distribution fitting).
+
+## MATLAB path configuration
+
+Add the `nested_RF_stimulus/src` folder and its subfolders to the MATLAB path:
+
+```matlab
+addpath(genpath('C:\matlabroot\G4_Protocols\nested_RF_stimulus\src'));
+```
+
+You may want to add this to your MATLAB startup script so it runs automatically.
+
+## Hardcoded paths to update
+
+Several source files contain hardcoded paths that are specific to the original rig computer. If you are setting up on a different machine, you will need to update these:
+
+| File | Line | Current value | What to change |
+|:-----|:-----|:--------------|:---------------|
+| `src/protocol_generation/generate_protocol2.m` | 92 | `C:\matlabroot\G4_Protocols\nested_RF_protocol2` | Path where Protocol 2 experiment folders are created |
+| `src/stimulus_generation/helper/patt_frame_to_coord.m` | 46 | `C:\matlabroot\G4_Protocols\nested_RF_stimulus\protocols\LHS\...\Patterns` | Path to Protocol 1 LHS pattern files |
+| `src/stimulus_generation/helper/patt_frame_to_coord.m` | 49 | `C:\matlabroot\G4_Protocols\nested_RF_stimulus\protocols\RHS2\...\Patterns` | Path to Protocol 1 RHS pattern files |
+| `src/analysis/process_protocol2.m` | 45 | `<data_root>/protocol2` | `PROJECT_ROOT` — where analysis results and figures are saved |
+: {.bordered}
+
+::: {.callout-important}
+The `PROJECT_ROOT` in `process_protocol2.m` is a macOS path. If you are running analysis on the Windows rig computer, you must change this to a Windows-format path.
+:::
+
+## G4_Display_Tools configuration
+
+The G4_Display_Tools uses a `userSettings.m` file to configure paths and default settings. Make sure this file is correctly set up for your rig. Key settings include:
+
+- The path to the G4 Protocols directory
+- Communication settings for the PanelsController
+
+Refer to the [G4 Software](/resources.qmd#g4-software) documentation for detailed configuration instructions.
+
+## Verifying your setup
+
+Run through this checklist to confirm everything is working:
+
+- [ ] **MATLAB path:** Type `which generate_protocol2` in the Command Window. It should return the path to the file.
+- [ ] **G4_Display_Tools:** Type `which PanelsController` in the Command Window. It should return a path.
+- [ ] **Circular Statistics:** Type `which circ_vmpar` in the Command Window. It should return a path.
+- [ ] **Arena connection:** Type `PanelsController` to verify you can connect to the G4 arena.
+
+## Protocol-specific setup
+
+Before being able to run the protocols, you need to ensure that the necessary pattern files and protocol files are in place. 
+
+In order to run Protocol 1, you need to have at least one protocol directory containing a `.g4p` file to be able to run the protocol through the `G4_experiment_conductor`. Several of these protocol folders and files are [included](https://github.com/reiserlab/tutl-T4/tree/main/protocols) in the repository.
+
+- [ ] **Protocol 1 files:** Verify the `.g4p` files exist in `protocols/bkg4/LHS/` (or `RHS/`) and that it is the correct version that you wish to use.
+- [ ] **Pattern files for P2:** Verify the full-field bar patterns exist in `results/patterns/protocol2/full_field_bars4/`.
+
+::: {.callout-note}
+Within the `protocols` folder of the repository, there are several versions of the Protocol 1 `.g4p` files. Protocols within the `LHS` folder contain protocols that will present stimuli on the left-hand side of the arena (from the fly's perspective) and protocols within the `RHS` folder contain protocols that will present stimuli on the right-hand side of the arena. The protocol in `RHS2` folder presents the stimuli on panels slightly more central (pixels <b>81:180</b> instead of <b>97:192</b>) than the protocols in the `RHS` folder. Protocols in the `bkg4` folder contains protocols with a baseline background pixel intensity of <b>4</b> (out of 15), as opposed to <b>6</b> (out of 15) in the other folders.
+:::
+## Next steps
+
+Once your environment is set up:
+
+1. Read [Key Concepts](ephys_nested_rf_concepts.qmd) to understand the arena, coordinate system, and terminology
+2. Read [Protocol 1](ephys_nested_rf_protocol1.qmd) and [Protocol 2](ephys_nested_rf_protocol2.qmd) to understand what the protocols do
+3. Follow [How to run the protocols](ephys_nested_rf_how-to-run.qmd) to run your first experiment

@@ -1,0 +1,264 @@
+---
+title: "Overview"
+---
+
+Between <i>May and October 2024</i>, <b>Jin Yong Park</b> recorded from different cell types with the `DS_probe_protocol` in the G4 ephys setup.
+
+ These experiments were run based on the prior analysis conducted by <b>Judith Hoeller</b> of theoretical receptive field properties of the different cell types, which suggested that they would display directionally selective responses to moving bars in specific orientations. 
+ 
+ The aim of these experiments was to test these predictions and to characterise the direction selectivity of the different cell types.
+
+## Protocol overview 
+
+::: {.callout-note}
+### Quick summary:
+3 repetitions of light and dark moving bars, edges, gratings and full field flashes. This protocol is run through the `G4_experiment_conductor` GUI.
+:::
+
+::: {.callout-note}
+### Aim:
+To characterise the direction selectivity and temporal frequency tuning of different cell types in Drosophila visual system.
+:::
+
+<b>Bar stimuli</b> moving in multiple orientations - horizontal, vertical, and diagonal (45° and -45°) - presented at two different speeds (20 and 100 degrees per second). These bars come in two spatial sizes (2 and 6 pixels wide) and are shown in both standard and flipped (reverse contrast) versions.
+
+<b>Edge stimuli</b> featuring ON and OFF edges moving horizontally and vertically, also presented in standard and reversed directions. These edge stimuli are designed to isolate responses to luminance boundaries.
+
+<b>Grating stimuli</b> with 12-pixel spatial wavelength, oriented vertically, horizontally, and diagonally. These gratings are presented at multiple temporal frequencies ranging from 0.5 Hz up to 64 Hz, allowing characterization of temporal frequency tuning. Each grating orientation includes both standard and phase-flipped versions.
+
+<b>Flash stimuli</b> presented at various temporal frequencies (0.5 Hz to 64 Hz) to examine responses to uniform field flicker without spatial structure.
+
+<b>Pixel intensity values</b> The protocol's patterns are `gs_val = 4` (intensity values can be 0-15). The protocol first presents all dark stimuli (intensity 1/15) and then runs through all stimuli again with light stimuli (intensity 12/15). Each stimulus is presented 3 times.
+
+## Protocol description
+
+|   ID | Pattern                                 | Function                                     |   Duration |
+|:----:|:---------------------------------------:|:--------------------------------------------:|:----------:|
+|    1 | 0042_2pix_H_bar_1bar_4bkg_G4            | 0187_2px_H_bar_20dps_G4                      |        2.9 |
+|    2 | 0042_2pix_H_bar_1bar_4bkg_G4            | 0188_FLIP_2px_H_bar_20dps_G4                 |        2.9 |
+|    3 | 0042_2pix_H_bar_1bar_4bkg_G4            | 0189_2px_H_bar_100dps_G4                     |        0.8 |
+|    4 | 0042_2pix_H_bar_1bar_4bkg_G4            | 0190_FLIP_2px_H_bar_100dps_G4                |        0.8 |
+|    5 | 0041_6pix_H_bar_1bar_4bkg_G4            | 0191_6px_H_bar_20dps_G4                      |        3.1 |
+|    6 | 0041_6pix_H_bar_1bar_4bkg_G4            | 0192_FLIP_6px_H_bar_20dps_G4                 |        3.1 |
+|    7 | 0041_6pix_H_bar_1bar_4bkg_G4            | 0193_6px_H_bar_100dps_G4                     |        0.8 |
+|    8 | 0041_6pix_H_bar_1bar_4bkg_G4            | 0194_FLIP_6px_H_bar_100dps_G4                |        0.8 |
+|    9 | 0011_2pix_V_1bar_4bkg_G4                | 0001_V_bar_20dps_81-175_G4                   |        5.6 |
+|   10 | 0011_2pix_V_1bar_4bkg_G4                | 0002_FLIP_V_bar_20dps_81-175_G4              |        5.6 |
+|   11 | 0011_2pix_V_1bar_4bkg_G4                | 0003_V_bar_100dps_81-175_G4                  |        1.4 |
+|   12 | 0011_2pix_V_1bar_4bkg_G4                | 0004_FLIP_V_bar_100dps_81-175_G4             |        1.4 |
+|   13 | 0012_6pix_V_1bar_4bkg_G4                | 0005_V_bar_6pix_20dps_77-175_G4              |        5.9 |
+|   14 | 0012_6pix_V_1bar_4bkg_G4                | 0006_FLIP_V_bar_6pix_20dps_77-175_G4         |        5.8 |
+|   15 | 0012_6pix_V_1bar_4bkg_G4                | 0007_V_bar_6pix_100dps_77-175_G4             |        1.4 |
+|   16 | 0012_6pix_V_1bar_4bkg_G4                | 0008_FLIP_V_bar_6pix_100dps_77-175_G4        |        1.4 |
+|   17 | 0033_6pix_bar_45_1bar_4bkg_G4           | 0009_D_bar_6pix_20dps_9-84_G4                |        4.5 |
+|   18 | 0033_6pix_bar_45_1bar_4bkg_G4           | 0010_FLIP_D_bar_6pix_20dps_9-84_G4           |        4.5 |
+|   19 | 0033_6pix_bar_45_1bar_4bkg_G4           | 0011_D_bar_6pix_100dps_9-84_G4               |        1.1 |
+|   20 | 0033_6pix_bar_45_1bar_4bkg_G4           | 0012_FLIP_D_bar_6pix_100dps_9-84_G4          |        1.1 |
+|   21 | 0034_6pix_bar_flip_45_1bar_4bkg_G4      | 0013_-D_bar_6pix_20dps_40-115_G4             |        4.5 |
+|   22 | 0034_6pix_bar_flip_45_1bar_4bkg_G4      | 0014_FLIP_-D_bar_6pix_20dps_40-115_G4        |        4.5 |
+|   23 | 0034_6pix_bar_flip_45_1bar_4bkg_G4      | 0015_-D_bar_6pix_100dps_40-115_G4            |        1.1 |
+|   24 | 0034_6pix_bar_flip_45_1bar_4bkg_G4      | 0016_FLIP_-D_bar_6pix_100dps_40-115_G4       |        1.1 |
+|   25 | 0022_OFF_edge_V_1edge_4bkg_G4           | 0017_V_Edge_20dps_81-175_G4                  |        5.6 |
+|   26 | 0038_OFF_edge_V_1edge_4bkg_Reverse_G4   | 0022_REV_V_Edge_20dps_18-115_G4              |        5.8 |
+|   27 | 0022_OFF_edge_V_1edge_4bkg_G4           | 0018_V_Edge_100dps_81-175_G4                 |        1.3 |
+|   28 | 0038_OFF_edge_V_1edge_4bkg_Reverse_G4   | 0021_REV_V_Edge_100dps_18-115_G4             |        1.3 |
+|   29 | 0026_OFF_edge_H_1edge_4bkg_G4           | 0090_horizontal_bar_20dps_2-76s_49fr_0st_G4  |        2.8 |
+|   30 | 0037_OFF_edge_H_1edge_4bkg_Reverse_G4   | 0090_horizontal_bar_20dps_2-76s_49fr_0st_G4  |        2.8 |
+|   31 | 0026_OFF_edge_H_1edge_4bkg_G4           | 0092_horizontal_bar_100dps_0-55s_49fr_0st_G4 |        0.6 |
+|   32 | 0037_OFF_edge_H_1edge_4bkg_Reverse_G4   | 0092_horizontal_bar_100dps_0-55s_49fr_0st_G4 |        0.6 |
+|   33 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0129_V_Gratings_0-5Hz_40fr_G4                |        3.3 |
+|   34 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0130_FLIP_V_Gratings_0-5Hz_40fr_G4           |        3.3 |
+|   35 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0131_V_Gratings_1Hz_40fr_G4                  |        3.3 |
+|   36 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0132_FLIP_V_Gratings_1Hz_40fr_G4             |        3.3 |
+|   37 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0133_V_Gratings_4Hz_40fr_G4                  |        3.3 |
+|   38 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0134_FLIP_V_Gratings_4Hz_40fr_G4             |        3.3 |
+|   39 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0135_V_Gratings_8Hz_40fr_G4                  |        3.3 |
+|   40 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0136_FLIP_V_Gratings_8Hz_40fr_G4             |        3.3 |
+|   41 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0137_V_Gratings_16Hz_40fr_G4                 |        3.3 |
+|   42 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0138_FLIP_V_Gratings_16Hz_40fr_G4            |        3.3 |
+|   43 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0139_V_Gratings_32Hz_40fr_G4                 |        3.3 |
+|   44 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0140_FLIP_V_Gratings_32Hz_40fr_G4            |        3.3 |
+|   45 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0141_V_Gratings_64Hz_40fr_G4                 |        3.3 |
+|   46 | 0057_Gratings_12pix_V_1bar_4bkg_G4      | 0142_FLIP_V_Gratings_64Hz_40fr_G4            |        3.3 |
+|   47 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0143_H_Gratings_0-5Hz_41fr_G4                |        3.3 |
+|   48 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0144_FLIP_H_Gratings_0-5Hz_41fr_G4           |        3.3 |
+|   49 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0145_H_Gratings_1Hz_41fr_G4                  |        3.3 |
+|   50 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0146_FLIP_H_Gratings_1Hz_41fr_G4             |        3.3 |
+|   51 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0147_H_Gratings_4Hz_41fr_G4                  |        3.3 |
+|   52 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0148_FLIP_H_Gratings_4Hz_41fr_G4             |        3.3 |
+|   53 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0149_H_Gratings_8Hz_41fr_G4                  |        3.3 |
+|   54 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0150_FLIP_H_Gratings_8Hz_41fr_G4             |        3.3 |
+|   55 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0151_H_Gratings_16Hz_41fr_G4                 |        3.3 |
+|   56 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0152_FLIP_H_Gratings_16Hz_41fr_G4            |        3.3 |
+|   57 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0153_H_Gratings_32Hz_41fr_G4                 |        3.3 |
+|   58 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0154_FLIP_H_Gratings_32Hz_41fr_G4            |        3.3 |
+|   59 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0155_H_Gratings_64Hz_41fr_G4                 |        3.3 |
+|   60 | 0059_Gratings_12pix_H_1bar_4bkg_G4      | 0156_FLIP_H_Gratings_64Hz_41fr_G4            |        3.3 |
+|   61 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0157_D_12pix_Gratings_0-5Hz_12fr_G4          |        3.3 |
+|   62 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0158_FLIP_D_12pix_Gratings_0-5Hz_12fr_G4     |        3.3 |
+|   63 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0159_D_12pix_Gratings_1Hz_12fr_G4            |        3.3 |
+|   64 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0160_FLIP_D_12pix_Gratings_1Hz_12fr_G4       |        3.3 |
+|   65 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0161_D_12pix_Gratings_4Hz_12fr_G4            |        3.3 |
+|   66 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0162_FLIP_D_12pix_Gratings_4Hz_12fr_G4       |        3.3 |
+|   67 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0163_D_12pix_Gratings_8Hz_12fr_G4            |        3.3 |
+|   68 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0164_FLIP_D_12pix_Gratings_8Hz_12fr_G4       |        3.3 |
+|   69 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0165_D_12pix_Gratings_16Hz_12fr_G4           |        3.3 |
+|   70 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0166_FLIP_D_12pix_Gratings_16Hz_12fr_G4      |        3.3 |
+|   71 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0167_D_12pix_Gratings_32Hz_12fr_G4           |        3.3 |
+|   72 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0168_FLIP_D_12pix_Gratings_32Hz_12fr_G4      |        3.3 |
+|   73 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0169_D_12pix_Gratings_64Hz_12fr_G4           |        3.3 |
+|   74 | 0031_12pix_grating_45_1bar_4bkg_G4      | 0170_FLIP_D_12pix_Gratings_64Hz_12fr_G4      |        3.3 |
+|   75 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0157_D_12pix_Gratings_0-5Hz_12fr_G4          |        3.3 |
+|   76 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0158_FLIP_D_12pix_Gratings_0-5Hz_12fr_G4     |        3.3 |
+|   77 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0159_D_12pix_Gratings_1Hz_12fr_G4            |        3.3 |
+|   78 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0160_FLIP_D_12pix_Gratings_1Hz_12fr_G4       |        3.3 |
+|   79 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0161_D_12pix_Gratings_4Hz_12fr_G4            |        3.3 |
+|   80 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0162_FLIP_D_12pix_Gratings_4Hz_12fr_G4       |        3.3 |
+|   81 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0163_D_12pix_Gratings_8Hz_12fr_G4            |        3.3 |
+|   82 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0164_FLIP_D_12pix_Gratings_8Hz_12fr_G4       |        3.3 |
+|   83 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0165_D_12pix_Gratings_16Hz_12fr_G4           |        3.3 |
+|   84 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0166_FLIP_D_12pix_Gratings_16Hz_12fr_G4      |        3.3 |
+|   85 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0167_D_12pix_Gratings_32Hz_12fr_G4           |        3.3 |
+|   86 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0168_FLIP_D_12pix_Gratings_32Hz_12fr_G4      |        3.3 |
+|   87 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0169_D_12pix_Gratings_64Hz_12fr_G4           |        3.3 |
+|   88 | 0032_12pix_grating_flip_45_1bar_4bkg_G4 | 0170_FLIP_D_12pix_Gratings_64Hz_12fr_G4      |        3.3 |
+|   89 | 0028_Flash_OFF_4_1_G4                   | 0122_Flash_0-5Hz_4fr_G4                      |        3   |
+|   90 | 0028_Flash_OFF_4_1_G4                   | 0123_Flash_1Hz_4fr_G4                        |        3   |
+|   91 | 0028_Flash_OFF_4_1_G4                   | 0124_Flash_4Hz_4fr_G4                        |        3   |
+|   92 | 0028_Flash_OFF_4_1_G4                   | 0128_Flash_8Hz_4fr_G4                        |        3   |
+|   93 | 0028_Flash_OFF_4_1_G4                   | 0125_Flash_16Hz_4fr_G4                       |        3   |
+|   94 | 0028_Flash_OFF_4_1_G4                   | 0126_Flash_32Hz_4fr_G4                       |        3   |
+|   95 | 0028_Flash_OFF_4_1_G4                   | 0127_Flash_64Hz_4fr_G4                       |        3   |
+|   96 | 0044_2pix_H_bar_12bar_4bkg_G4           | 0187_2px_H_bar_20dps_G4                      |        2.9 |
+|   97 | 0044_2pix_H_bar_12bar_4bkg_G4           | 0188_FLIP_2px_H_bar_20dps_G4                 |        2.9 |
+|   98 | 0044_2pix_H_bar_12bar_4bkg_G4           | 0189_2px_H_bar_100dps_G4                     |        0.8 |
+|   99 | 0044_2pix_H_bar_12bar_4bkg_G4           | 0190_FLIP_2px_H_bar_100dps_G4                |        0.8 |
+|  100 | 0043_6pix_H_bar_12bar_4bkg_G4           | 0191_6px_H_bar_20dps_G4                      |        3.1 |
+|  101 | 0043_6pix_H_bar_12bar_4bkg_G4           | 0192_FLIP_6px_H_bar_20dps_G4                 |        3.1 |
+|  102 | 0043_6pix_H_bar_12bar_4bkg_G4           | 0193_6px_H_bar_100dps_G4                     |        0.8 |
+|  103 | 0043_6pix_H_bar_12bar_4bkg_G4           | 0194_FLIP_6px_H_bar_100dps_G4                |        0.8 |
+|  104 | 0013_2pix_V_12bar_4bkg_G4               | 0001_V_bar_20dps_81-175_G4                   |        5.6 |
+|  105 | 0013_2pix_V_12bar_4bkg_G4               | 0002_FLIP_V_bar_20dps_81-175_G4              |        5.6 |
+|  106 | 0013_2pix_V_12bar_4bkg_G4               | 0003_V_bar_100dps_81-175_G4                  |        1.3 |
+|  107 | 0013_2pix_V_12bar_4bkg_G4               | 0004_FLIP_V_bar_100dps_81-175_G4             |        1.3 |
+|  108 | 0014_6pix_V_12bar_4bkg_G4               | 0005_V_bar_6pix_20dps_77-175_G4              |        5.8 |
+|  109 | 0014_6pix_V_12bar_4bkg_G4               | 0006_FLIP_V_bar_6pix_20dps_77-175_G4         |        5.8 |
+|  110 | 0014_6pix_V_12bar_4bkg_G4               | 0007_V_bar_6pix_100dps_77-175_G4             |        1.4 |
+|  111 | 0014_6pix_V_12bar_4bkg_G4               | 0008_FLIP_V_bar_6pix_100dps_77-175_G4        |        1.4 |
+|  112 | 0035_6pix_bar_45_12bar_4bkg_G4          | 0009_D_bar_6pix_20dps_9-84_G4                |        4.5 |
+|  113 | 0035_6pix_bar_45_12bar_4bkg_G4          | 0010_FLIP_D_bar_6pix_20dps_9-84_G4           |        4.5 |
+|  114 | 0035_6pix_bar_45_12bar_4bkg_G4          | 0011_D_bar_6pix_100dps_9-84_G4               |        1.1 |
+|  115 | 0035_6pix_bar_45_12bar_4bkg_G4          | 0012_FLIP_D_bar_6pix_100dps_9-84_G4          |        1.1 |
+|  116 | 0036_6pix_bar_flip_45_12bar_4bkg_G4     | 0013_-D_bar_6pix_20dps_40-115_G4             |        4.5 |
+|  117 | 0036_6pix_bar_flip_45_12bar_4bkg_G4     | 0014_FLIP_-D_bar_6pix_20dps_40-115_G4        |        4.5 |
+|  118 | 0036_6pix_bar_flip_45_12bar_4bkg_G4     | 0015_-D_bar_6pix_100dps_40-115_G4            |        1.1 |
+|  119 | 0036_6pix_bar_flip_45_12bar_4bkg_G4     | 0016_FLIP_-D_bar_6pix_100dps_40-115_G4       |        1.1 |
+|  120 | 0015_ON_edge_V_12edge_4bkg_G4           | 0017_V_Edge_20dps_81-175_G4                  |        5.6 |
+|  121 | 0039_ON_edge_V_12edge_4bkg_Reverse_G4   | 0022_REV_V_Edge_20dps_18-115_G4              |        5.8 |
+|  122 | 0015_ON_edge_V_12edge_4bkg_G4           | 0018_V_Edge_100dps_81-175_G4                 |        1.3 |
+|  123 | 0039_ON_edge_V_12edge_4bkg_Reverse_G4   | 0021_REV_V_Edge_100dps_18-115_G4             |        1.3 |
+|  124 | 0023_ON_edge_H_12edge_4bkg_G4           | 0090_horizontal_bar_20dps_2-76s_49fr_0st_G4  |        2.8 |
+|  125 | 0040_ON_edge_H_12edge_4bkg_Reverse_G4   | 0090_horizontal_bar_20dps_2-76s_49fr_0st_G4  |        2.8 |
+|  126 | 0023_ON_edge_H_12edge_4bkg_G4           | 0092_horizontal_bar_100dps_0-55s_49fr_0st_G4 |        0.6 |
+|  127 | 0040_ON_edge_H_12edge_4bkg_Reverse_G4   | 0092_horizontal_bar_100dps_0-55s_49fr_0st_G4 |        0.6 |
+
+: Description of patterns, functions and their durations (in minutes) for the "DS_probe_protocol" used in G4 ephys recordings. {.bordered}
+
+## Experiment Log
+
+| cell_type   |   # recordings |
+|:-----------:|:--------------:|
+| Cm10        |              9 |
+| Dm4         |              4 |
+| T4T5        |              4 |
+| Tm24        |              4 |
+| Tm5Y        |              4 |
+| TmY13       |              7 |
+| TmY18       |              7 |
+| TmY3        |              8 |
+
+: Number of recordings by cell type {.bordered}
+
+
+|   ID | cell_type   |   date_str |   date_to_process |
+|:----:|:-----------:|:----------:|:-----------------:|
+|    1 | TmY3        | 05_23_2024 |        05_23_2024 |
+|    2 | TmY3        | 05_28_2024 |      05_28_2024_1 |
+|    3 | TmY3        | 05_28_2024 |      05_28_2024_2 |
+|    4 | TmY3        | 05_29_2024 |      05_29_2024_1 |
+|    5 | TmY3        | 05_29_2024 |      05_29_2024_2 |
+|    6 | TmY3        | 05_30_2024 |        05_30_2024 |
+|    7 | TmY3        | 05_31_2024 |      05_31_2024_1 |
+|    8 | TmY3        | 05_31_2024 |      05_31_2024_2 |
+|    9 | TmY13       | 05_24_2024 |        05_24_2024 |
+|   10 | TmY13       | 06_03_2024 |        06_03_2024 |
+|   11 | TmY13       | 06_04_2024 |      06_04_2024_1 |
+|   12 | TmY13       | 06_04_2024 |      06_04_2024_2 |
+|   13 | TmY13       | 06_05_2024 |        06_05_2024 |
+|   14 | TmY13       | 06_06_2024 |        06_06_2024 |
+|   15 | TmY13       | 06_07_2024 |        06_07_2024 |
+|   16 | TmY18       | 06_10_2024 |        06_10_2024 |
+|   17 | TmY18       | 06_13_2024 |        06_13_2024 |
+|   18 | TmY18       | 06_14_2024 |        06_14_2024 |
+|   19 | TmY18       | 06_17_2024 |        06_17_2024 |
+|   20 | TmY18       | 06_18_2024 |      06_18_2024_1 |
+|   21 | TmY18       | 06_18_2024 |      06_18_2024_2 |
+|   22 | TmY18       | 06_21_2024 |        06_21_2024 |
+|   23 | Cm10        | 07_26_2024 |        07_26_2024 |
+|   24 | Cm10        | 07_30_2024 |        07_30_2024 |
+|   25 | Cm10        | 07_31_2024 |      07_31_2024_2 |
+|   26 | Cm10        | 08_01_2024 |        08_01_2024 |
+|   27 | Cm10        | 08_05_2024 |      08_05_2024_1 |
+|   28 | Cm10        | 08_05_2024 |      08_05_2024_2 |
+|   29 | Cm10        | 08_06_2024 |      08_06_2024_1 |
+|   30 | Cm10        | 08_06_2024 |      08_06_2024_2 |
+|   31 | Cm10        | 08_08_2024 |        08_08_2024 |
+|   32 | Dm4         | 08_26_2024 |        08_26_2024 |
+|   33 | Dm4         | 08_28_2024 |      08_28_2024_2 |
+|   34 | Dm4         | 08_29_2024 |        08_29_2024 |
+|   35 | Dm4         | 08_30_2024 |        08_30_2024 |
+|   36 | Tm24        | 09_03_2024 |      09_03_2024_1 |
+|   37 | Tm24        | 09_03_2024 |      09_03_2024_2 |
+|   38 | Tm24        | 09_04_2024 |      09_04_2024_2 |
+|   39 | Tm24        | 09_05_2024 |        09_05_2024 |
+|   40 | Tm5Y        | 09_06_2024 |        09_06_2024 |
+|   41 | Tm5Y        | 09_10_2024 |        09_10_2024 |
+|   42 | Tm5Y        | 09_12_2024 |        09_12_2024 |
+|   43 | Tm5Y        | 09_13_2024 |        09_13_2024 |
+|   44 | T4T5        | 10_03_2024 |        10_03_2024 |
+|   45 | T4T5        | 10_04_2024 |      10_04_2024_1 |
+|   46 | T4T5        | 10_04_2024 |      10_04_2024_2 |
+|   47 | T4T5        | 10_08_2024 |        10_08_2024 |
+
+: Comprehensive experiment log {.bordered}
+
+## Fly Strains
+
+| Male | Female | Neuron Type | Effector | 
+|----|----------|----|-----|
+| <i>SS00395</i>|<i> w+(DL);;pJFRC28-10XUAS-IVS-GFP-p10(attP2)</i>| TmY3 | cytoplasmic GFP |
+| <i>SS14770</i>|<i> w+(DL);;pJFRC28-10XUAS-IVS-GFP-p10(attP2)</i>| TmY13 | cytoplasmic GFP |
+| <i>SS02701</i>|<i> w+(DL);;pJFRC28-10XUAS-IVS-GFP-p10(attP2)</i>| TmY18 | cytoplasmic GFP |
+| <i>SS02582</i>|<i> w+(DL);;pJFRC28-10XUAS-IVS-GFP-p10(attP2)</i>| Cm10 | cytoplasmic GFP |
+| <i>SS00297</i>|<i> w+(DL);;pJFRC28-10XUAS-IVS-GFP-p10(attP2)</i>| Dm4 | cytoplasmic GFP |
+| <i>SS02044</i>|<i> w+(DL);;pJFRC28-10XUAS-IVS-GFP-p10(attP2)</i>| Tm24 | cytoplasmic GFP |
+| <i>SS03722</i>|<i> w+(DL);;pJFRC28-10XUAS-IVS-GFP-p10(attP2)</i>| Tm5Y | cytoplasmic GFP |
+| <i>GR_42F06</i>|<i> w+(DL);;pJFRC28-10XUAS-IVS-GFP-p10(attP2)</i>| T4T5 | cytoplasmic GFP |
+ <i>GR_42F06</i>|<i> w;pJFRC28-10XUAS-IVS-GFP-p10 (su(Hw)attP5)</i>| T4T5 | cytoplasmic GFP |
+: Fly strains {.bordered}
+
+## Analysing the data 
+
+To analyse a folder of data from running this protocol, run the script `process_ds_probe_protocol_data` that can be found [here](https://github.com/leburnett/DS_probe_protocol/blob/main/src/processing/process_ds_probe_protocol_data.m). This script will process all the data in the specified folder and save the results in a new folder called `processed_data` within the same directory. The script will also generate a summary figure for each recording, which will be saved in the `processed_data` folder.
+
+## Code availability
+
+The code for analysing the DS_Probe_protocol can be found in this [repository](https://github.com/leburnett/DS_probe_protocol).
+
+## Data availability
+
+The data from these experiments can be found on the Reiser Lab prfs group drive in the folder `/Volumes/reiserlab/burnettl/Ephys_experiments/Jinyong/DS_probe_protocol_1REP_RightHemi_20Hz_05-22-24_09-09-09`.
+
+## Notes 
+
+In retrospect, we should have recorded from the T4T5 driver first (as these cells are well studied) to validate the protocol before moving on to the less well characterised cell types. I would advise anyone wishing to continue with this project to start with T4T5 recordings to ensure the protocol is working as expected and to provide a benchmark against which to compare the responses of the other cell types.

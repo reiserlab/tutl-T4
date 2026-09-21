@@ -1,0 +1,141 @@
+---
+title: "Bar flash analysis"
+---
+
+### Stimulus overview
+
+![<b>Bar flash positions schematic:</b> The 11 bar flash positions for each orientation. One bar is centred in the 30 x 30 pixel area, and 5 positions are shifted in each direction along the orientation axis.](../assets/imgs/ephys/nested_RF_stimulus/schematics/fig8_protocol2_bar_flash_positions.png){.ifr_center}
+
+___________________________________________________________________________
+
+### Key points:
+- <b>88 flashes</b> in total (8 orientations, 11 flashes per orientation.)
+- 88 flashes repeated <b>3 times</b> in a different <b>random order</b> per repetition.
+- Flashes are only in <b>one contrast</b>, either bright or dark.
+- 1 flash centred within the 30 x 30 pixel square and then <b>5 positions</b> above and below that position along the axis.
+- Slow flashes = <b>1s total</b> each — 80ms flash with 920ms interval.
+- Fast flashes = <b>0.5s total</b> each — 14ms flash with 486ms interval.
+
+### Stimulus description
+
+![Bar flash stimuli examples showing the 11 different positions for the 8 different orientations.](../assets/imgs/ephys/nested_RF_stimulus/overview/0003.png){.ifr_center}
+
+| Parameter | Value |
+|:----------|:------|
+| Num orientations | 8 |
+| Flashes per orientation | 11 |
+| Step size (px) | 1 / 2 |
+| Duration slow | 80ms |
+| Inter-flash interval slow | 920ms |
+| Duration fast | 14ms |
+| Inter-flash interval fast | 486ms |
+: {.bordered}
+
+::: {.callout-note}
+### Stimulus generation
+Scripts used to make the stimulus:\
+
+`generate_bar_flash_stimulus_xy.m` — makes the pattern.\
+
+`generate_bar_flash_pos_fns.m` — creates the position functions.
+This function makes a different position function for each repetition so that the bar flashes are presented in a random order each time.
+
+The stimulus is made from the pre-made bar patterns within the folder `C:\matlabroot\G4_Protocols\nested_RF_stimulus\results\patterns\protocol2\full_field_bars4` that are used for generating the bar sweep stimuli too. So, the pixel intensity values will match those stimuli.
+:::
+
+::: {.callout-important}
+Bar flash stimulus changed from 1 to 2 pixel steps per frame on <b>October 23rd 2025</b>.
+:::
+
+___________________________________________________________________________
+
+### Breakdown of `process_bar_flashes_p2`
+
+```matlab
+function process_bar_flashes_p2(exp_folder, metadata, PROJECT_ROOT)
+```
+
+This function processes the responses to bar flash stimuli. Unlike the bar sweep and flash analyses, **no direction selectivity or receptive field metrics are computed** — the primary output is the raw timeseries data and visualisation figures. All results are saved to disk.
+
+#### Loading the data
+
+The frame position and voltage data are loaded from the experiment `Log` file:
+
+```matlab
+f_data = Log.ADC.Volts(1, :); % frame data
+v_data = Log.ADC.Volts(2, :)*10; % voltage data
+```
+
+#### Parsing the bar flash data
+
+The function `parse_bar_flash_data` extracts bar flash responses from the full recording.
+
+**Step 1 — Find repetition boundaries.**
+
+The parser detects 3-second gaps (≥ 30,000 samples at 10 kHz) in the frame data to identify the boundaries between stimulus blocks. These gaps correspond to the 3s grey backgrounds inserted between stimulus types within each repetition.
+
+**Step 2 — Separate slow and fast flash blocks.**
+
+Within each repetition, the slow bar flashes (80ms/920ms) are presented first, followed by the fast bar flashes (14ms/486ms), with a 3s grey gap between them. The parser uses the gap indices to locate the correct data ranges for each speed condition within each of the 3 repetitions.
+
+**Step 3 — Extract individual flash timeseries.**
+
+Within each speed block, individual flash onsets are identified by frame position transitions. For each flash, the extracted data window includes a proportion of the inter-flash interval before and after the flash itself (controlled by the parameter `prop_int_2_show`, default 0.75). This provides context to see the baseline voltage around each flash.
+
+**Step 4 — Organise into cell arrays.**
+
+The extracted timeseries are organised into cell arrays indexed by position, orientation, and repetition:
+
+| Output | Size | Description |
+|:-------|:-----|:------------|
+| `data_slow` | 11 × 8 × 3 | Slow flash timeseries (positions × orientations × reps) |
+| `data_fast` | 11 × 8 × 3 | Fast flash timeseries |
+| `mean_slow` | 11 × 8 | Mean across 3 reps (NaN-padded if lengths differ) |
+| `mean_fast` | 11 × 8 | Mean across 3 reps |
+: {.bordered}
+
+#### Plotting the bar flash data
+
+The function `plot_bar_flash_data` creates an 8 × 11 tiled figure (8 rows for orientations, 11 columns for positions) showing the response timeseries at every bar flash condition.
+
+**PD alignment — `shiftMaxColumnTo5`**
+
+Before plotting, the data is circularly shifted so that the orientation with the strongest response is centred at column 5. This function:
+
+1. Computes the peak response for each orientation (using the 98th percentile in the 40%–80% window of each timeseries).
+2. Identifies which orientation column has the strongest overall response.
+3. Circularly shifts all 8 orientation rows so that the peak column is at position 5, labelled "PD" (preferred direction).
+4. The opposite row (position 1) is labelled "OD" (orthogonal direction).
+
+**Subplot appearance:**
+
+- **Individual repetitions** are plotted in grey.
+- **Mean response** is plotted in black.
+- **Vertical black lines** mark flash onset and offset within each subplot.
+- **Background colour** indicates response strength: stronger responses produce a darker red-tinted background. The colour is normalised relative to the strongest response across the whole figure using the formula `[1, norm_value, norm_value] × 0.9`.
+- **Y-axis limits** are fixed at [-75, -30] mV.
+
+Two figures are generated: one for slow flashes and one for fast flashes.
+
+#### Saved outputs
+
+Results are saved as `bar_flash_results_<date>_<time>_<strain>_<on_off>.mat` in the `results/bar_flash_results/` folder. The saved variables are:
+
+| Variable | Description |
+|:---------|:------------|
+| `data_slow` | 11 × 8 × 3 cell array of slow flash timeseries |
+| `data_fast` | 11 × 8 × 3 cell array of fast flash timeseries |
+| `mean_slow` | 11 × 8 cell array of mean slow responses |
+| `mean_fast` | 11 × 8 cell array of mean fast responses |
+: {.bordered}
+
+Figures are saved as PDFs:
+
+- `figures/bar_flash_stimuli/Bar_flashes_80ms_<date>_<time>_<strain>.pdf` (slow)
+- `figures/bar_flash_stimuli/Bar_flashes_14ms_<date>_<time>_<strain>.pdf` (fast)
+
+___________________________________________________________________________
+
+### Example output
+
+![Example bar flash stimuli analysis. Timeseries are plotted for the responses to each flash. The coloured squares in the top row correspond to the colours of the bars in the images in the furthest left column. Left column contains an image of all 11 bars of that orientation overlaid. This example was made for the bar flashes that were shifted by 1 pixel steps.](../assets/imgs/ephys/nested_RF_stimulus/overview/0004.png){.ifr_center}

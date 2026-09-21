@@ -1,0 +1,195 @@
+---
+title: "Data Organisation"
+---
+
+This page documents the folder organization for data collected using the Nested RF Protocol. Understanding this structure is essential for locating experiment data and for automated analysis scripts.
+
+## Overview
+
+Data is organized into two main directories based on which protocol was run:
+
+- **Protocol 1 data:** Located within the protocol folder itself (organized by screen side and protocol version)
+- **Protocol 2 data:** Located in a dedicated `data/` subfolder.
+
+___________________________________________________________________________
+
+## Protocol 1 Data Structure
+
+Protocol 1 data is stored within the `nested_RF_stimulus/protocol1/` directory, organized first by screen side (LHS/RHS) or background intensity (bkg4), then by protocol version folder.
+
+```
+protocol1/
+├── LHS/                                    # Left half of screen experiments
+│   ├── protocol1_4reps_12px_6px_LHS_2sbkg_200msfl_50msint_11-27-24_15-02-95/
+│   └── protocol1_10kHz_4reps_12px_6px_LHS_2sbkg_200msfl_50msint_12-13-24_14-33-03/
+├── RHS/                                    # Right half of screen experiments
+│   ├── protocol1_10kHz_4reps_12px_6px_RHS_2sbkg_200msfl_50msint_04-08-25_08-08-42/
+│   └── protocol1_10kHz_4reps_12px_6px_RHS2_2sbkg_200msfl_50msint_81_180_05-05-25_16-18-66/
+└── bkg4/                                   # Background intensity 4 experiments
+    └── protocol1_10kHz_4reps_12px_6px_LHS_2sbkg_200msfl_150msint_07-10-25_15-45-60/
+```
+
+### Protocol Folder Naming Convention
+
+The protocol folder name encodes key parameters:
+
+`protocol1_[sampleRate]_[reps]_[flashSizes]_[side]_[bkgDuration]_[flashDur]_[interval]_[date]_[time]`
+
+| Component | Example | Meaning |
+|:----------|:--------|:--------|
+| `10kHz` | `protocol1_10kHz_...` | 10 kHz sampling rate |
+| `4reps` | `..._4reps_...` | 4 repetitions of stimulus set |
+| `12px_6px` | `..._12px_6px_...` | Flash sizes: 12 pixel and 6 pixel squares |
+| `LHS` / `RHS` | `..._LHS_...` | Left or Right half of screen |
+| `2sbkg` | `..._2sbkg_...` | 2 second background between repetitions |
+| `200msfl` | `..._200msfl_...` | 200 ms flash duration |
+| `50msint` / `150msint` | `..._50msint_...` | Inter-flash interval |
+| `12-13-24_14-33-03` | Date and time protocol was created |
+
+### Within Each Protocol Folder
+
+```
+protocol1_10kHz_4reps_12px_6px_LHS_2sbkg_200msfl_50msint_12-13-24_14-33-03/
+├── Patterns/                   # Visual stimulus pattern files
+│   ├── *.mat                   # MATLAB pattern data
+│   └── *.pat                   # Compiled pattern files
+├── Functions/                  # Timing/position function files
+│   ├── *.mat                   # MATLAB function data
+│   └── *.pfn                   # Compiled function files
+├── Analog Output Functions/    # Analog output timing (if used)
+├── Log Files/                  # Raw experiment logs
+├── Aborted_Experiments/        # Failed or incomplete experiments
+├── currentExp.mat              # Current experiment configuration
+├── processing_settings.mat     # Analysis settings
+│
+├── MM_DD_YYYY/                 # Date folders (e.g., 12_18_2024/)
+│   └── {strain}-HH_MM_SS/      # Individual experiment folders
+│       ├── metadata.mat        # Experiment metadata
+│       ├── exp_order.mat       # Stimulus presentation order
+│       ├── processedData.mat   # Processed analysis results
+│       ├── G4_TDMS_Logs_*.mat  # Converted log data
+│       ├── GridPlots.fig       # MATLAB figure output
+│       └── MM-DD-YYYY_HH-MM-SS-ms/  # Raw TDMS data folder
+│           ├── *.tdms          # Raw data files
+│           └── *.tdms_index    # TDMS index files
+```
+
+### Experiment Folder Naming
+
+Individual experiment folders follow the pattern: `{strain}-HH_MM_SS`
+
+Examples:
+- `42F06XJFRC28_T4T5-15_29_81` → Strain: 42F06XJFRC28_T4T5, Time: 15:29:81
+- `SS00395XJFRC28_TmY3-10_58_33` → Strain: SS00395XJFRC28_TmY3, Time: 10:58:33
+- `no_fly-16_20_26` → Test run with no fly
+
+___________________________________________________________________________
+
+## Protocol 2 Data Structure
+
+Protocol 2 data is stored in `nested_RF_stimulus/protocol2/data/`. The data folders follow the naming structure `YYYY_MM_DD_HH_MM` and on the experiment computer itself they are automatically stored in `C:\matlabroot\G4_Protocols\nested_RF_protocol2\data`. These folders were then moved onto the group drive and organized based on the type of experiment (e.g. RNAi knockdown experiments, direction selectivity experiments) and within that by condition (e.g. control vs TTL knockdown, ON vs OFF contrast).
+
+```
+protocol2/data/
+├── RNAi_ttl_2025/              # RNAi knockdown experiments (Dec 2024 - Jan 2025)
+│   ├── control/                # Control group
+│   │   ├── ON/                 # ON contrast (bright flashes)
+│   │   └── OFF/                # OFF contrast (dark flashes)
+│   └── ttl/                    # TTL knockdown group
+│       ├── ON/
+│       └── OFF/
+│
+├── DS_v2/                      # Direction selectivity experiments (Apr - May 2025)
+│   ├── TmY3/                   # TmY3 cell type
+│   ├── TmY18/                  # TmY18 cell type
+│   ├── TmY5a/                  # TmY5a cell type
+│   └── Tm5Y/                   # Tm5Y cell type
+│
+├── T4T5_Summer2025/            # T4/T5 MARCM experiments (Jul - Sep 2025)
+│   └── YYYY_MM_DD_HH_MM/       # Individual experiment folders
+│
+├── T4T5_autumn2025/            # T4/T5 MARCM experiments (Oct - Nov 2025)
+│   └── YYYY_MM_DD_HH_MM/
+│
+├── 2025_whiteplus/             # White+ genetic background controls
+│   └── YYYY_MM_DD_HH_MM/
+│
+├── Octopamine/                 # Octopamine pharmacology experiments
+│   ├── pre/                    # Before drug application
+│   ├── post/                   # After drug application
+│   └── wash/                   # After washout
+│
+├── CGP54626/                   # CGP54626 (GABA-B antagonist) experiments
+│   ├── T4/                     # T4 cells
+│   ├── T5/                     # T5 cells
+│   ├── pre/                    # Before drug
+│   └── post/                   # After drug
+│
+└── SS0324_T4T5/                # SS0324 split-Gal4 line experiments
+    └── OFF/                    # OFF contrast only
+```
+
+### Within Each Experiment Folder
+
+Protocol 2 experiment folders follow a consistent structure:
+
+```
+YYYY_MM_DD_HH_MM/               # e.g., 2024_12_12_12_12/
+├── Patterns/                   # Visual stimulus patterns
+│   ├── *.mat                   # Pattern data files
+│   └── *.pat                   # Compiled patterns
+├── Functions/                  # Timing functions
+│   ├── *.mat
+│   └── *.pfn
+├── params/                     # Stimulus parameters
+│   └── *.mat                   # Parameter files for each stimulus type
+├── Analog Output Functions/    # Analog outputs (if used)
+├── Log Files/                  # Raw data
+│   ├── MM-DD-YYYY_HH-MM-SS-ms/ # TDMS data folder
+│   │   ├── *.tdms
+│   │   └── *.tdms_index
+│   └── G4_TDMS_Logs_*.mat      # Converted log data
+├── currentExp.mat              # Experiment configuration
+└── metadata_YYYY_MM_DD_HH_MM.mat  # Experiment metadata
+```
+
+All of these files are generated and saved with every run of the `generate_protocol2()` script in MATLAB. This means that there is a lot of redundancy across the different experiment folders, as the patterns and functions are the same for all experiments within a given protocol version. However, this structure enables the user to see the exact patterns/functions used for the experiment. From <b>October 2025</b>, automatic logging to a google sheet was implemented. This [google sheet](https://docs.google.com/spreadsheets/d/1O7PnOvNsQB3CQl6SMOh6jvBitfoKoZenH5Djex-WX8c/edit?resourcekey=&gid=1394701893#gid=1394701893) contains the full experiment log from this date onwards.
+
+___________________________________________________________________________
+
+## Key Data Files
+
+### metadata.mat / metadata_*.mat
+
+Contains experiment metadata including:\
+- Fly genotype/strain\
+- Experimenter notes\
+- Protocol parameters used\
+- Date and time of experiment
+
+### exp_order.mat
+
+Contains the order in which stimuli were presented during the experiment.
+
+### processedData.mat
+
+Contains processed analysis results including:
+- Extracted membrane potential traces
+- Stimulus-aligned responses
+- Summary statistics
+
+### G4_TDMS_Logs_*.mat
+
+MATLAB-converted version of the raw TDMS log files, containing:\
+- ADC voltage recordings (electrophysiology data)\
+- Frame position data (stimulus timing)\
+- Timestamps
+
+### TDMS Files
+
+Raw data files from the G4 display system:\
+- `*_ADC0_Volts.tdms` - Channel 0 voltage (typically membrane potential)\
+- `*_ADC1_Volts.tdms` - Channel 1 voltage (if used)\
+- `*_ADC0_Time.tdms` / `*_ADC1_Time.tdms` - Timestamps\
+- `*_Frame_Position.tdms` - Current frame being displayed\
+- `*_Frame_Time.tdms` - Frame timing

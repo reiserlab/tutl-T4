@@ -1,0 +1,63 @@
+---
+title: "How to analyse P1"
+---
+
+Protocol 1 data is processed **automatically** after the experiment finishes running in the `G4_experiment_conductor`. This requires a correctly configured `processing_settings.mat` file to be present in the protocol folder.
+
+### The `processing_settings.mat` file
+
+This file tells the `G4_experiment_conductor` how to process the data after the protocol finishes. For Protocol 1, the following fields must be set:
+
+| Field | Value | Description |
+|:------|:------|:------------|
+| `settings.is_ephys_grid` | `1` | Enables ephys grid processing mode |
+| `settings.neutral_frame` | `1` | Frame number of the background/neutral frame |
+| `settings.grid_columns` | `[8, 16]` | Number of columns in the grid for each flash size (6px has 16, 12px has 8) |
+| `settings.grid_rows` | `[4, 8]` | Number of rows in the grid for each flash size (6px has 8, 12px has 4) |
+| `settings.path_to_protocol` | Full path to `.g4p` file | Path including filename and extension |
+: {.bordered}
+
+::: {.callout-note}
+If a variation of P1 uses only one flash size, then `grid_columns` and `grid_rows` should be single integers rather than arrays.
+:::
+
+### What happens automatically
+
+When `settings.is_ephys_grid` is set to 1, the experiment conductor calls `process_data`, which in turn runs [`ephys_grid_processing.m`](https://github.com/JaneliaSciComp/G4_Display_Tools/blob/master/G4_Data_Analysis/new_data_processing/ephys_grid_processing.m) from the G4_Display_Tools repository. This function:
+
+1. Loads the TDMS log files from the experiment
+2. Extracts the voltage and frame position data
+3. Segments the data by flash position using the frame data
+4. Computes the mean response across repetitions for each flash position
+5. Generates **4 grid plots** — one for each combination of flash size and contrast:
+   - 12 pixel bright (ON) flashes
+   - 12 pixel dark (OFF) flashes
+   - 6 pixel bright (ON) flashes
+   - 6 pixel dark (OFF) flashes
+
+The processed data is saved as `processedData.mat` and the plots are saved as `GridPlots.fig` in the experiment folder.
+
+### How to read the grid plots
+
+Each grid plot shows the cell's voltage response to flashes at every grid position:
+
+- **Subplot position** corresponds to the flash location on the arena from the fly's perspective.
+- **Thin lines** show responses to individual repetitions.
+- **Thick line** shows the mean response across all 4 repetitions.
+- **Number above each subplot** is the **frame number** of that flash in the pattern file.
+
+### Identifying the `peak_frame`
+
+1. Look at the **6 pixel flash** plots (both bright and dark contrasts).
+2. Identify which subplot has the **largest response** — this is the flash position closest to the cell's receptive field centre.
+3. Note the **frame number** displayed above that subplot. This is your `peak_frame`.
+4. Also note which contrast (bright or dark) elicited the larger response — this determines whether you run the ON or OFF version of Protocol 2.
+
+### When not to proceed to Protocol 2
+
+Consider **not** running Protocol 2 if:
+
+- **RF near the edge:** The `peak_frame` corresponds to a flash position within ~15 pixels of the arena boundary. The 30 x 30 pixel Protocol 2 area would extend off-screen. The code in `generate_protocol2.m` will display a warning if this occurs.
+- **Weak responses:** The voltage deflections are small or inconsistent across repetitions, suggesting the recording quality is poor.
+- **No clear RF:** No single location shows a clearly stronger response than its neighbours.
+- **Recording instability:** The baseline voltage drifts significantly across repetitions.

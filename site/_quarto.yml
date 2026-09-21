@@ -1,0 +1,80 @@
+project:
+  type: website
+  output-dir: _site
+
+filters:
+  - _extensions/timestamp/timestamp.lua
+  - skip-gifs-in-pdf.lua
+
+website:
+  title: "tutl-T4 · nested RF protocol"
+  description: "Stimulus protocols and analysis documentation for T4/T5 patch electrophysiology on the G4 LED arena (Reiser Lab, HHMI Janelia). Companion to Sanfilippo et al."
+  page-footer:
+    center: "Documentation written by Laura Burnett; mirrored from [leburnett/reiser-documentation](https://github.com/leburnett/reiser-documentation). Page generated on {{< meta buildtime >}}"
+  repo-url: https://github.com/reiserlab/tutl-T4
+  favicon: /assets/favicon/favicon.ico
+
+  navbar:
+    background: dark
+    search: true
+    left:
+      - text: "Home"
+        href: index.qmd
+      - text: "Electrophysiology"
+        href: Ephys/index.qmd
+    right:
+      - icon: github
+        href: https://github.com/reiserlab/tutl-T4
+
+  sidebar:
+    - title: "Electrophysiology"
+      collapse-level: 1
+      contents:
+        - Ephys/index.qmd
+        - Ephys/ephys_rig_specs.qmd
+        - section: "Nested RF Protocol"
+          contents:
+            - Ephys/ephys_nested_rf.qmd
+            - Ephys/ephys_nested_rf_getting-started.qmd
+            - Ephys/ephys_nested_rf_concepts.qmd
+            - section: "Protocol Descriptions"
+              contents:
+                - Ephys/ephys_nested_rf_protocol1.qmd
+                - Ephys/ephys_nested_rf_protocol2.qmd
+                - Ephys/ephys_nested_rf_version_history.qmd
+            - section: "How-To Guides"
+              contents:
+                - Ephys/ephys_nested_rf_how-to-make.qmd
+                - Ephys/ephys_nested_rf_how-to-run.qmd
+                - Ephys/ephys_nested_rf_adapting-protocols.qmd
+            - section: "Analysis"
+              contents:
+                - Ephys/ephys_nested_rf_how-to-analyse-p1.qmd
+                - Ephys/ephys_nested_rf_how-to-analyse-p2.qmd
+                - section: "Analysis Deep Dives"
+                  contents:
+                    - Ephys/ephys_nested_rf_bar-sweep-analysis.qmd
+                    - Ephys/ephys_nested_rf_flash-analysis.qmd
+                    - Ephys/ephys_nested_rf_bar-flash-analysis.qmd
+                - Ephys/ephys_nested_rf_interpreting-results.qmd
+            - section: "Reference"
+              contents:
+                - Ephys/ephys_nested_rf_code-architecture.qmd
+                - Ephys/ephys_nested_rf_data_structure.qmd
+                - Ephys/ephys_nested_rf_exp_log.qmd
+            - Ephys/ephys_nested_rf_troubleshooting.qmd
+        - section: "DS Probe Protocol"
+          contents:
+            - Ephys/ephys_ds_probe_protocol.qmd
+
+  page-navigation: true
+
+format:
+  html:
+    theme:
+      light: [yeti, theme-light.scss]
+      dark: [yeti, theme-dark.scss]
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    code-overflow: wrap

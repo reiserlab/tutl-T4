@@ -1,0 +1,158 @@
+---
+title: "Interpreting Results"
+---
+
+This page explains how to interpret the analysis outputs from Protocol 2, including polar plots, receptive field heatmaps, and the key metrics. For details on how each analysis step works, see the [Bar sweep analysis](ephys_nested_rf_bar-sweep-analysis.qmd), [Flash RF analysis](ephys_nested_rf_flash-analysis.qmd), and [Bar flash analysis](ephys_nested_rf_bar-flash-analysis.qmd) deep-dive pages.
+
+## Bar sweep polar plots
+
+The polar plot shows the cell's response magnitude to bars moving in 16 directions (8 orientations, forward and reverse). The distance from the centre represents the strength of the response in that direction.
+
+### What strong direction selectivity looks like
+
+- The polar plot is **elongated in one direction** with a clear peak — the cell responds strongly to motion in one direction (PD) and weakly in the opposite direction (ND).
+- The **vector sum arrow** points firmly in the preferred direction with a large magnitude.
+- Typical strongly DS cells (e.g. T4/T5) will have a magnitude > 0.3 and a clear single peak.
+
+### What weak or no direction selectivity looks like
+
+- The polar plot is **roughly circular** — the cell responds similarly to all directions.
+- The vector sum arrow is short (small magnitude, < 0.1) and its direction may be unreliable.
+- Some cells may show **orientation selectivity** (responding to two opposite directions) rather than direction selectivity — this appears as a figure-8 shape in the polar plot.
+
+### Multiple speeds
+
+If multiple bar speeds are tested, separate polar plots are generated for each speed. Direction selectivity may differ across speeds — some cells respond more strongly to slower or faster bars.
+
+## Receptive field heatmaps
+
+The RF heatmaps show the spatial distribution of the cell's response to flashes at different positions.
+
+### Colour coding
+
+- **Red:** Excitatory responses (depolarisation) — the cell responds with increased activity.
+- **Blue:** Inhibitory responses (hyperpolarisation) — the cell responds with decreased activity.
+- **White/grey:** No significant response at that position.
+- **Darker colours** indicate stronger responses.
+
+### What a good RF map looks like
+
+- A clearly defined **excitatory lobe** (red region) concentrated in one area — this is the centre of the receptive field.
+- Possibly an adjacent **inhibitory lobe** (blue region) — this flanking inhibition is characteristic of direction-selective cells and contributes to their selectivity.
+- The preferred direction arrow (from bar analysis) should point **from the inhibitory lobe toward the excitatory lobe** in a classically direction-selective cell.
+
+### What a poor RF map looks like
+
+- Scattered red/blue patches with no clear spatial organisation — may indicate a noisy recording.
+- A very large, diffuse excitatory region — may indicate that the flashes are too small to resolve the RF structure, or the cell has a large RF.
+- No clear response at any position — the cell may not respond to static flashes, or the RF centre may not be within the stimulus area.
+
+## Gaussian fit parameters
+
+The analysis fits rotated 2D Gaussians to the excitatory and inhibitory lobes of the RF. The fit parameters describe the size, shape, and orientation of each lobe.
+
+### Excitatory lobe fit (`optEx`)
+
+The 7 parameters of the fitted Gaussian:
+
+| Parameter | Description |
+|:----------|:------------|
+| Amplitude | Peak height of the Gaussian (voltage units) |
+| x0 | Centre x-position (pixels) |
+| y0 | Centre y-position (pixels) |
+| sigma_x | Width along the major axis (pixels) |
+| sigma_y | Width along the minor axis (pixels) |
+| theta | Rotation angle of the Gaussian (radians) |
+| Baseline | Baseline offset |
+: {.bordered}
+
+### Inhibitory lobe fit (`optInh`)
+
+Same 7 parameters, but fitted to the inhibitory (blue) responses.
+
+### R-squared values
+
+- `R_squared` — goodness of fit for the excitatory lobe
+- `R_squaredi` — goodness of fit for the inhibitory lobe
+
+Higher R² values (closer to 1) indicate a better fit. Values below ~0.3 suggest the RF is not well-described by a single 2D Gaussian and the fit should be interpreted cautiously.
+
+## Direction selectivity metrics
+
+### `resultant_angle`
+
+The preferred direction (PD) of the cell, calculated as the angle of the vector sum of responses to all 16 directions. Expressed in radians.
+
+### `magnitude`
+
+The normalised length of the vector sum (0 to 1). Higher values indicate stronger direction selectivity:
+
+- **> 0.3:** Strong direction selectivity
+- **0.1 - 0.3:** Moderate selectivity
+- **< 0.1:** Weak or no selectivity
+
+### Circular variance (`cv`)
+
+A complementary measure of tuning sharpness:
+
+- **CV close to 0:** Responses concentrated in one direction (sharp tuning)
+- **CV close to 1:** Responses spread uniformly across directions (broad/no tuning)
+
+### FWHM
+
+Full-width at half-maximum of the tuning curve (in degrees). Smaller values indicate sharper directional tuning. Typical values for strongly DS cells are 60-120 degrees.
+
+### Von Mises parameters
+
+- `thetahat` — estimated preferred direction from von Mises distribution fit
+- `kappa` — concentration parameter (higher = sharper tuning). Typical values: 1-5 for moderately tuned cells, >5 for sharply tuned cells.
+
+## Flash response metrics
+
+### `cmap_id` (response classification)
+
+Each flash position is classified into one of three groups:
+
+| Value | Meaning | Colour in plots |
+|:------|:--------|:----------------|
+| 1 | Excitatory (depolarising) response | Red |
+| 2 | Inhibitory (hyperpolarising) response | Blue |
+| 3 | No significant response | White/grey |
+: {.bordered}
+
+### `data_comb`
+
+A single value per flash position summarising the response:
+
+- For excitatory positions (cmap_id = 1): the maximum voltage during flash presentation
+- For inhibitory positions (cmap_id = 2): the minimum voltage during flash presentation
+- For unresponsive positions (cmap_id = 3): the mean voltage during the last 25% of the flash
+
+This value determines the colour intensity in the heatmap plots.
+
+## Bar flash results
+
+The bar flash analysis produces timeseries plots for each of the 11 bar positions across 8 orientations. Look for:
+
+- **Position-dependent responses:** Stronger responses at the centre (position 6) that decrease toward the flanks indicate the bar is sweeping through the RF.
+- **Orientation-dependent responses:** Differences across orientations reveal the spatial structure of the RF along different axes.
+
+## Comparing across conditions
+
+When comparing results between experimental groups (e.g., control vs experimental, pre- vs post-drug):
+
+- **Direction selectivity:** Compare `magnitude`, `cv`, and polar plot shapes. A reduction in magnitude or broadening of tuning (increased cv) after manipulation suggests disrupted DS.
+- **RF structure:** Compare Gaussian fit parameters (sigma values, lobe positions). Changes in the spatial relationship between excitatory and inhibitory lobes may indicate altered circuit function.
+- **Preferred direction:** Compare `resultant_angle` across conditions. A shift in PD could indicate changes in the underlying circuit.
+
+## Where results are saved
+
+| Result type | File location |
+|:------------|:-------------|
+| Bar sweep metrics | `<PROJECT_ROOT>/results/bar_results/peak_vals_<strain>_<on_off>_<date>.mat` |
+| RF analysis metrics | `<PROJECT_ROOT>/results/flash_results/rf_results_<date>_<time>_<strain>_<on_off>.mat` |
+| Bar sweep figures | `<PROJECT_ROOT>/figures/bar_stimuli/baselineb4/` |
+| RF figures | `<PROJECT_ROOT>/figures/flash_stimuli/` |
+: {.bordered}
+
+The `PROJECT_ROOT` is defined in `process_protocol2.m` (line 45). See [Installation & Setup](ephys_nested_rf_getting-started.qmd) for details on updating this path.

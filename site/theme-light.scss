@@ -1,0 +1,230 @@
+/*-- scss:defaults --*/
+
+// Light mode - no variable changes needed, using yeti defaults
+
+/*-- scss:rules --*/
+
+/* Custom styles for light mode */
+
+/* Link styling */
+.main-content a {
+    white-space: normal;
+}
+
+a {
+    word-break: break-word;
+}
+
+/* Keyboard styling */
+kbd, .kbd {
+    font-style: normal;
+    display: inline-block;
+    color: #363636;
+    text-decoration: none;
+    text-align: center;
+    background: #efefef;
+    padding: 3px 7px;
+    margin: 5px 3px;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-box-shadow: inset 0 0 25px #e8e8e8, 0 1px 0 #c3c3c3, 0 2px 0 #c9c9c9, 0 2px 3px #333;
+    -moz-box-shadow: inset 0 0 25px #e8e8e8, 0 1px 0 #c3c3c3, 0 2px 0 #c9c9c9, 0 2px 3px #333;
+    box-shadow: inset 0 0 25px #e8e8e8, 0 1px 0 #c3c3c3, 0 2px 0 #c9c9c9, 0 2px 3px #333;
+    text-shadow: 0 1px 0 #f6f6f6;
+}
+
+/* GUI button styling */
+.gui-btn {
+    font-style: normal;
+    font-size: 90%;
+    display: inline-block;
+    color: #363636;
+    text-decoration: none;
+    text-align: center;
+    background: #efefef;
+    padding: 2px 7px;
+    -webkit-box-shadow: inset 0 0 25px #e8e8e8, 0 1px 0 #c3c3c3, 0 2px 0 #c9c9c9, 0 2px 3px #333;
+    -moz-box-shadow: inset 0 0 25px #e8e8e8, 0 1px 0 #c3c3c3, 0 2px 0 #c9c9c9, 0 2px 3px #333;
+    box-shadow: inset 0 0 25px #e8e8e8, 0 1px 0 #c3c3c3, 0 2px 0 #c9c9c9, 0 2px 3px #333;
+    text-shadow: 0 1px 0 #f6f6f6;
+    z-index: 5000;
+}
+
+/* GUI text styling */
+.gui-txt {
+    display: inline-block;
+    font-style: normal;
+    color: #336699;
+    background: #efefef;
+    padding: 2px 7px;
+    z-index: -100000;
+}
+
+/* Clear floats */
+h1, h2, hr {
+    clear: both;
+}
+
+.clear {
+    clear: both;
+}
+
+/* Figure styling - right floating */
+.ifr {
+    float: right !important;
+    width: 30%;
+    margin-left: 15px;
+    margin-bottom: 5px;
+    transition: transform 0.5s;
+}
+
+/* Figure styling - centered */
+.ifr_center {
+    display: block;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5px;
+    transition: transform 0.5s;
+}
+
+/* Hover zoom effect */
+.pop:hover {
+    transform: scale(2);
+}
+
+/* Alert boxes */
+.error, .warning, .info {
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.error {
+    background-color: #ffeeee;
+    border-left: 15px solid #cc0000;
+}
+
+.warning {
+    background-color: #ffffee;
+    border-left: 15px solid #cccc00;
+}
+
+.info {
+    background-color: #eeffee;
+    border-left: 15px solid #00cc00;
+}
+
+/* Figure caption styling */
+.ifr figcaption {
+    text-align: left;
+    text-indent: -25px;
+    padding-left: 25px;
+    font-style: italic;
+    color: #666666;
+    font-size: 0.85em;
+}
+
+.ifr figcaption::before {
+    content: "Fig: ";
+    font-weight: bold;
+    font-style: normal;
+    color: #666666;
+}
+
+figure.ifr {
+    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
+}
+
+.ifr_center figcaption {
+    text-align: left;
+    text-indent: -25px;
+    padding-left: 25px;
+    font-style: italic;
+    color: #666666;
+    font-size: 0.85em;
+}
+
+.ifr_center figcaption::before {
+    content: "Fig: ";
+    font-weight: bold;
+    font-style: normal;
+    color: #666666;
+}
+
+figure.ifr_center {
+    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
+}
+
+/* Quarto-specific: ensure images in figures display nicely */
+figure img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* PDF download button styling */
+.quarto-title-meta-contents a[href$=".pdf"] {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-top: 5px;
+}
+
+.quarto-title-meta-contents a[href$=".pdf"]:hover {
+    background-color: #0b5ed7;
+}
+
+/* Table styling - bordered tables with thin black lines */
+table.bordered {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+table.bordered th,
+table.bordered td {
+    border: 1px solid #333333;
+    padding: 0.5rem 0.75rem;
+    vertical-align: middle;
+}
+
+table.bordered th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    text-align: left;
+}
+
+table.bordered td {
+    text-align: left;
+}
+
+/* Right-align numeric columns (Value columns) */
+table.bordered td:last-child,
+table.bordered th:last-child {
+    text-align: right;
+}
+
+/* First column left-aligned */
+table.bordered td:first-child,
+table.bordered th:first-child {
+    text-align: left;
+}
+
+/* Striped rows */
+table.striped tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table.striped tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+/* Hide the published date at the top of pages */
+.quarto-title-meta {
+    display: none;
+}

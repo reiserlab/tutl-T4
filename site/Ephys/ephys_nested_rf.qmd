@@ -1,0 +1,111 @@
+---
+title: "Quickstart"
+---
+
+The **Nested RF Protocol** was designed by LE Burnett in 2024 for patch electrophysiology experiments ran by <b>Jin Yong Park</b>. It was based upon the protocol used in *Gruntman et al. 2018*. All fly husbandry was carried out by <b>Edward Rogers</b>.
+
+::: {.callout-tip}
+### Quick reference
+This page provides an overview of the Nested RF Protocol and links to all the guides you need to run and analyse the experiment. If you are setting up for the first time, see the [Installation & Setup](ephys_nested_rf_getting-started.qmd) page, then read [Key Concepts](ephys_nested_rf_concepts.qmd) for background on the G4 arena coordinate system and terminology.
+:::
+
+## Protocol overview
+
+- Multi-step protocol consisting of a <b>short first protocol (P1)</b> that determines the rough receptive field location and preferred contrast of the cell, and a <b>longer second protocol (P2)</b> that is only presented within a subsection of the arena screen, centred on the location of the peak response determined in P1.
+
+- P2 probes the direction selectivity of the cell using moving bar stimuli, as well as measuring the receptive field structure at higher spatial resolution using small flashing squares.
+
+- P1 is run through the `G4_experiment_conductor` [GUI](/resources.qmd#g4-software)
+- P2 is generated and run through a custom MATLAB script called `generate_protocol2()`.
+
+::: {.callout-note}
+### Aim:
+To characterise the receptive field structure and direction selectivity of visual neurons in Drosophila, particularly T4/T5 cells.
+
+The experiments specifically aimed to understand the role of certain proteins linked to specific receptors that are localised to specific locations along the T4/T5 dendrites in shaping the receptive field properties of these cells.
+:::
+
+## Prerequisites
+
+Before running the protocol, ensure the following are in place:
+
+- [ ] G4 arena powered on and connected
+- [ ] MATLAB R2023a or later
+- [ ] `nested_RF_stimulus` repository cloned and `src/` folder on the MATLAB path
+- [ ] [G4_Display_Tools](https://github.com/JaneliaSciComp/G4_Display_Tools) installed and configured
+- [ ] [Circular Statistics Toolbox](https://www.mathworks.com/matlabcentral/fileexchange/10676-circular-statistics-toolbox-directional-statistics) installed
+- [ ] PanelsController connects to the arena (`PanelsController` in Command Window)
+- [ ] Protocol 1 `.g4p` files present in `protocols/` folder
+- [ ] Protocol 2 bar patterns present in `results/patterns/protocol2/full_field_bars4/`
+
+For full installation and configuration details, see the [Installation & Setup](ephys_nested_rf_getting-started.qmd) page.
+
+## Protocol descriptions
+
+If you would like to see detailed descriptions of the contents of the two protocols, please see the following pages:
+
+- [Protocol 1](ephys_nested_rf_protocol1.qmd)
+
+- [Protocol 2](ephys_nested_rf_protocol2.qmd)
+
+If you would like to see how the parameters of Protocol 1 and 2 have changed over time please see the following page:
+
+- [Version History](ephys_nested_rf_version_history.qmd)
+
+## Creating and running the protocols
+
+- [How the protocols are made](ephys_nested_rf_how-to-make.qmd)
+
+- [How to run the protocols](ephys_nested_rf_how-to-run.qmd)
+
+## Experiment log
+
+Find a log of the different experiments and fly strains here:
+
+- [Experiment Log](ephys_nested_rf_exp_log.qmd).
+
+## Analysing the data
+
+- [How to analyse P1](ephys_nested_rf_how-to-analyse-p1.qmd)
+
+- [How to analyse P2](ephys_nested_rf_how-to-analyse-p2.qmd)
+
+### Experiment workflow
+
+The typical workflow for running the Nested RF Protocol is:
+
+```
+            ┌──────────────────────────┐
+            │ Protocol 1 (~6-7.5 min)  │
+            │                          │
+            │ Run coarse RF mapping    │
+            │ using G4_experiment_     │
+            │ conductor GUI            │
+            └────────────┬─────────────┘
+                        │
+                        ▼
+                    ┌─────────────────────────┐
+                    │ Between P1 & P2         │
+                    │                         │
+                    │ Identify peak_frame     │
+                    │ from 6px grid plots.    │
+                    │ Determine ON/OFF        │
+                    └────────────┬────────────┘
+                                │
+                                ▼
+                            ┌──────────────────────────────┐
+                            │ Protocol 2 (~20-25 min)      │
+                            │                              │
+                            │ Run high-res RF mapping and  │
+                            │ direction selectivity via    │
+                            │ generate_protocol2()         │
+                            └───────────────┬──────────────┘
+                                            │
+                                            ▼
+                                    ┌─────────────────────┐
+                                    │ Analysis            │
+                                    │                     │
+                                    │ process_protocol2() │
+                                    │ in experiment folder│
+                                    └─────────────────────┘
+```

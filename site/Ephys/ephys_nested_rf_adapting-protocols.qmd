@@ -1,0 +1,168 @@
+---
+title: "Adapting Protocols"
+---
+
+This guide explains how to modify the Nested RF Protocols for different experiments. It covers common modifications, the files and parameters involved, and lessons from past adaptations.
+
+## Quick reference: what to change
+
+| Goal | Files to modify | Key parameters |
+|:-------|:-------------|:---------------|
+| Different flash sizes | `generate_protocol1_stimuli.m`, `generate_flash_stimulus_xy.m` | `params.flash_sz`, `px_flash` |
+| Different arena region | `generate_protocol1_stimuli.m` | `disp_x1`, `disp_x2`, `disp_y1`, `disp_y2` |
+| Different bar speeds | `generate_protocol2.m`, `generate_bar_pos_fns.m` | Add speed entries to the speed arrays and update `trial_dur` |
+| Different background intensity | Both generation scripts | `px_intensity(1)` (background), and full-field bar patterns may need remaking |
+| Add/remove stimulus types | `generate_protocol2.m`, `create_protocol2.m` | Comment/uncomment stimulus generation blocks, update `pattern_order`/`func_order` |
+| New fly strains | `get_input_parameters.m` | Add strain name to the dropdown `Items` list (line 65) |
+| Different number of repetitions | `generate_protocol2.m` | `n_reps` variable |
+| Different analysis output path | `process_protocol2.m` | `PROJECT_ROOT` variable (line 45) |
+: {.bordered}
+
+## Modifying Protocol 1
+
+Protocol 1 is generated once and reused. To create a modified version:
+
+### Changing flash sizes
+
+In `src/stimulus_generation/generate_protocol1_stimuli.m`, modify the `params.flash_sz` value before calling `generate_stimulus()`. The flash size is specified in pixels (e.g., 12 for a 12x12 pixel square).
+
+If you change the flash sizes, you must also update the `processing_settings.mat` file:
+
+- `settings.grid_columns` — number of columns in the grid for each flash size
+- `settings.grid_rows` — number of rows in the grid for each flash size
+
+These values are calculated as: `grid_columns = floor(arena_width / flash_sz)` and `grid_rows = floor(arena_height / flash_sz)`.
+
+### Changing the display region
+
+The pixel range is set by `disp_x1`, `disp_x2`, `disp_y1`, `disp_y2` in `generate_protocol1_stimuli.m`. For example:
+
+- LHS: `disp_x1=17, disp_x2=112` (pixels 17-112, skipping the missing panel)
+- RHS: `disp_x1=97, disp_x2=192` or `disp_x1=81, disp_x2=180`
+
+### Changing timing
+
+- `params.flash_dur` — flash duration in seconds (e.g., 0.2 for 200ms)
+- `params.interval_dur` — inter-flash interval in seconds (e.g., 0.15 for 150ms)
+
+### Reducing to a single flash size
+
+The pharmacology version (Nov 2025) used only 6 pixel flashes. To do this, simply call `generate_stimulus()` once with `params.flash_sz = 6` instead of twice for both sizes. Update `processing_settings.mat` so that `grid_columns` and `grid_rows` are single integers rather than arrays.
+
+### Assembling the modified P1
+
+After generating new stimuli, follow the steps in [How to make the protocols](ephys_nested_rf_how-to-make.qmd) to assemble the protocol in the `G4_experiment_designer` GUI.
+
+___________________________________________________________________________
+
+## Modifying Protocol 2
+
+Protocol 2 is generated fresh each time `generate_protocol2()` is run, so modifications to its code take effect immediately.
+
+### Adding or removing bar speeds
+
+In `generate_protocol2.m`, the bar speeds are defined as an array. To add a speed:
+
+1. Add the new speed value (in degrees per second) to the speed array
+2. In `generate_bar_pos_fns.m`, ensure position functions are generated for the new speed
+3. In `create_protocol2.m`, update `pattern_order` and `func_order` to include the new speed conditions
+4. Update `trial_dur` to account for the new sweep duration
+
+### Removing stimulus types
+
+To remove a stimulus type (e.g., removing square flashes as done for the pharmacology version):
+
+1. Comment out or remove the relevant generation call in `generate_protocol2.m` (e.g., `generate_flash_stimulus_xy`)
+2. Update `create_protocol2.m` to remove those conditions from `pattern_order` and `func_order`
+3. Update the analysis in `process_protocol2.m` to skip the removed stimulus type
+
+### Changing flash parameters
+
+In `generate_protocol2.m`:
+
+- `px_flash` — flash size in pixels (currently 4)
+- `flash_dur_slow` — flash duration in seconds
+- `int_dur_slow` — inter-flash interval in seconds
+- `px_crop_flash` — side length of the stimulus area (currently 30 pixels)
+
+### Adding new fly strains to the GUI
+
+Edit `src/protocol_generation/get_input_parameters.m` and add the new strain name to the `Items` list in the strain dropdown (line 65). The strain name will then appear as an option in the pop-up dialog when running `generate_protocol2()`.
+
+### Changing the background intensity
+
+If you change the background intensity, you will also need to regenerate the full-field bar patterns that Protocol 2 uses. These are located in `results/patterns/protocol2/full_field_bars4/`. See [How to make the protocols](ephys_nested_rf_how-to-make.qmd) for instructions on using the `G4_pattern_generator_gui` to create new bar patterns with a different background level.
+
+___________________________________________________________________________
+
+## Modifying the analysis pipeline
+
+When you change stimulus parameters, the analysis code may also need updating:
+
+- **Different speeds:** `parse_bar_data.m` uses timing information to segment bar responses. Verify that the timing calculations still work with new speeds.
+- **Different flash sizes/counts:** `parse_flash_data.m` uses frame value thresholds to identify flash starts. The thresholds depend on the number of flash positions.
+- **Removed stimulus types:** Update `process_protocol2.m` to skip analysis of removed stimuli.
+
+___________________________________________________________________________
+
+## Case studies: past adaptations
+
+The protocol has evolved through several versions. Each adaptation provides a practical example of how to modify the code.
+
+### RNAi → DS Probe (April 2025)
+
+**Change:** Switched from LHS to RHS stimulation.
+
+**What was modified:**
+
+- `generate_protocol1_stimuli.m`: Changed `disp_x1/x2` from 17-112 to 97-192
+- A new Protocol 1 `.g4p` file was created for the RHS
+- `patt_frame_to_coord.m`: A new RHS pattern path was added (line 49)
+
+### DS Probe → T4/T5 Summer (July 2025)
+
+**Changes:** Background intensity 6/15 → 4/15, inter-flash interval 50ms → 150ms, added 6 pixel flashes to P2.
+
+**What was modified:**
+
+- New Protocol 1 generated with updated `px_intensity` and `interval_dur`
+- New full-field bar patterns made in `G4_pattern_generator_gui` with `2nd level: 4` instead of 6
+- `generate_protocol2.m`: Added a second call to `generate_flash_stimulus_xy` for 6px flashes
+- `create_protocol2.m`: Updated `pattern_order` and `func_order` to include the 6px flash conditions
+
+### T4/T5 Summer → T4/T5 Autumn (October 2025)
+
+**Changes:** Added 168 dps bar sweeps, added bar flash stimuli, added 3s background intervals between stimulus blocks.
+
+**What was modified:**
+
+- `generate_protocol2.m`: Added calls to `generate_bar_flash_stimulus_xy` and `generate_bar_flash_pos_fns`
+- `generate_bar_pos_fns.m`: Added position functions for 168 dps speed
+- `create_protocol2.m`: Added bar flash conditions and 3s background intervals to the stimulus order
+- `process_bar_flashes_p2.m`: New analysis function created for bar flash data
+
+### T4/T5 Autumn → Pharmacology (November 2025)
+
+**Changes:** Removed square flashes, added 250 dps and 500 dps bar sweeps.
+
+**What was modified:**
+
+- `generate_protocol2.m`: Commented out flash generation calls, added new speeds
+- `create_protocol2.m`: Removed flash conditions from `pattern_order`/`func_order`, added new speed conditions
+- Protocol 1: New version with only 6px flashes (`generate_protocol1_stimuli.m` called once instead of twice)
+
+___________________________________________________________________________
+
+## Testing your modifications
+
+Before running a modified protocol on a real experiment:
+
+1. **Use the test strain:** Set the strain to `'test'` in the GUI dialog. This prevents the experiment from being logged to the Google Sheets tracking sheet.
+
+2. **Check timing:** Review the estimated duration printed to the MATLAB console when `run_protocol2()` starts. Verify it matches your expectations.
+
+3. **Verify patterns visually:** After generation, you can load and inspect the pattern `.mat` files to confirm they look correct.
+
+4. **Run a dry test:** Run the protocol without a fly to verify the arena displays the expected stimuli in the correct sequence.
+
+5. **Check analysis compatibility:** Run `process_protocol2()` on the test data to confirm the analysis pipeline handles the new stimulus configuration correctly.

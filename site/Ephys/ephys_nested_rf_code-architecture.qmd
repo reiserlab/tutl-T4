@@ -1,0 +1,163 @@
+---
+title: "Code Architecture"
+---
+
+This page provides an overview of the `nested_RF_stimulus` codebase to help you navigate the repository and understand how the different components fit together.
+
+## Repository structure
+
+```
+nested_RF_stimulus/
+├── README.md
+├── protocols/                         # Pre-generated Protocol 1 experiments
+│   ├── bkg4/                         #   Background intensity 4 versions
+│   │   ├── LHS/                      #     Left hemisphere stimulation
+│   │   └── RHS/                      #     Right hemisphere stimulation
+│   ├── LHS/                          #   Earlier LHS versions (bkg 6)
+│   ├── RHS/, RHS2/                   #   Earlier RHS versions
+│   └── Old_Protocols_bkg6/           #   Legacy versions
+├── results/                          # Generated stimulus files and analysis output
+│   ├── functions/                    #   Position function files
+│   ├── patterns/                     #   Pattern files
+│   │   └── protocol2/
+│   │       └── full_field_bars4/     #   Pre-made full-field bar patterns for P2
+│   └── images/                       #   Generated schematics
+└── src/                              # Source code
+    ├── stimulus_generation/          #   Create visual stimuli
+    │   ├── pattern/                  #     Pattern generation functions
+    │   ├── posn_fn/                  #     Position function generation
+    │   └── helper/                   #     Utility functions
+    ├── protocol_generation/          #   Generate and run Protocol 2
+    ├── analysis/                     #   Data analysis pipelines
+    │   ├── protocol2/                #     P2 analysis functions
+    │   │   └── pipeline/             #       Data loading and parsing
+    │   ├── helper/                   #     Analysis utilities
+    │   └── plotting/                 #     Visualisation functions (55+)
+    └── figures/                      #   Publication figure generation
+```
+
+## Function call flows
+
+### Protocol 1 generation
+
+Protocol 1 stimuli are generated once and reused. Pre-generated versions are stored in the `protocols/` folder.
+
+```
+generate_protocol1_stimuli(hemi)
+├── generate_stimulus(params)           # For each flash size
+│   ├── generate_flash_pattern()        # Creates pattern .mat/.pat files
+│   └── generate_flash_function()       # Creates position function .mat/.pfn files
+└── generate_static_function()          # Creates background position function
+```
+
+After generating the stimuli, the user manually assembles them into a protocol using the `G4_experiment_designer` GUI and adds a `processing_settings.mat` file. See [How to make the protocols](ephys_nested_rf_how-to-make.qmd) for details.
+
+### Protocol 2 generation and execution
+
+Protocol 2 is generated fresh for each experiment and then immediately run.
+
+```
+generate_protocol2()
+├── get_input_parameters()              # GUI dialog for peak_frame, side, age, strain
+├── patt_frame_to_coord(frame, side)    # Converts peak_frame → [x,y] coordinates + ON/OFF
+├── generate_flash_stimulus_xy()        # 4px flashes (and 6px if applicable)
+├── generate_bar_stimulus_xy()          # Crops full-field bar patterns to stimulus area
+├── generate_bar_pos_fns()              # Position functions for each speed/direction
+├── generate_bar_flash_stimulus_xy()    # Static bar flash patterns
+├── generate_bar_flash_pos_fns()        # Position functions for bar flashes (randomised per rep)
+├── create_protocol2()                  # Assembles currentExp.mat with stimulus order
+├── run_protocol2()                     # Connects to arena and runs the experiment
+│   ├── PanelsController               # G4_Display_Tools hardware interface
+│   └── G4_TDMS_folder2struct()         # Converts raw TDMS logs to .mat
+└── export_to_google_sheets()           # Logs experiment metadata
+```
+
+### Protocol 2 analysis
+
+The analysis is run after the experiment from within the experiment folder.
+
+```
+process_protocol2()
+├── load_protocol2_data()               # Loads TDMS .mat files, metadata, parameters
+├── process_bars_p2()                   # Bar sweep direction selectivity analysis
+│   ├── parse_bar_data()                # Extracts individual bar responses from raw data
+│   ├── plot_timeseries_polar_bars()    # Circular timeseries + central polar plot
+│   ├── plot_polar_with_arrow()         # Polar plot with vector sum PD arrow
+│   ├── plot_heatmap_bars()             # Heatmap of peak responses per direction
+│   ├── find_PD_and_order_idx()         # Calculates PD, FWHM, circular variance
+│   └── compute_bar_response_metrics()  # DSI (vector sum and PD/ND methods)
+├── process_flash_p2()                  # Flash receptive field analysis
+│   ├── parse_flash_data()              # Extracts individual flash responses
+│   ├── plot_rf_estimate_timeseries_line()  # Grid plot with coloured backgrounds
+│   ├── plot_heatmap_flash_responses()  # Normalised heatmap of flash responses
+│   └── gaussian_RF_estimate()          # 2D Gaussian fit to excitatory/inhibitory lobes
+└── process_bar_flashes_p2()            # Bar flash analysis (if applicable)
+    ├── parse_bar_flash_data()          # Extracts bar flash responses
+    └── plot_bar_flash_timeseries()     # Timeseries per position and orientation
+```
+
+## Key data structures
+
+### `Log` (from TDMS conversion)
+
+The primary data structure loaded from `G4_TDMS_Logs_*.mat`:
+
+- `Log.ADC.Volts(1,:)` — Frame position data (which pattern frame was displayed at each timepoint)
+- `Log.ADC.Volts(2,:)` — Voltage data (electrophysiology recording, multiplied by 10 to reverse acquisition downsampling)
+
+### `currentExp.mat`
+
+Defines the experiment structure for Protocol 2:
+
+- Pattern file references and order
+- Position function references and order
+- Trial durations
+- Mode and gain settings
+
+### `params` (stimulus parameters)
+
+Saved in the `params/` subfolder of each experiment. Contains the exact parameters used to generate each stimulus type (flash sizes, intensities, timing, crop regions).
+
+### `metadata` / `metadata_*.mat`
+
+Contains experiment-level information: fly strain, age, peak_frame, arena side, date/time.
+
+### `processing_settings.mat` (Protocol 1 only)
+
+Configuration file for automatic post-experiment processing. Key fields: `is_ephys_grid`, `neutral_frame`, `grid_columns`, `grid_rows`, `path_to_protocol`.
+
+## External dependencies
+
+The following functions from [G4_Display_Tools](https://github.com/JaneliaSciComp/G4_Display_Tools) are used:
+
+| Function | Used in | Purpose |
+|:---------|:--------|:--------|
+| `PanelsController` | `run_protocol2.m` | Hardware communication with G4 arena |
+| `G4_experiment_conductor` | Protocol 1 execution | GUI for running pre-built protocols |
+| `G4_experiment_designer` | Protocol 1 creation | GUI for assembling experiments |
+| `G4_pattern_generator_gui` | Full-field bar creation | GUI for creating bar patterns |
+| `G4_TDMS_folder2struct` | `run_protocol2.m` | Converts raw TDMS logs to MATLAB .mat files |
+| `ephys_grid_processing` | Protocol 1 analysis | Generates grid plots from P1 data |
+: {.bordered}
+
+## Helper function reference
+
+### Stimulus generation helpers
+
+| Function | File | Description |
+|:---------|:-----|:------------|
+| `centeredSquare` | `src/stimulus_generation/helper/` | Calculates display region boundaries for a square centred on [x,y], with edge clipping |
+| `patt_frame_to_coord` | `src/stimulus_generation/helper/` | Converts Protocol 1 frame number to [x,y] screen coordinates and ON/OFF determination |
+| `generate_stimulus` | `src/stimulus_generation/helper/` | Core function that creates both patterns and position functions from a params struct |
+: {.bordered}
+
+### Analysis helpers
+
+| Function | File | Description |
+|:---------|:-----|:------------|
+| `find_PD_and_order_idx` | `src/analysis/helper/` | Vector sum PD calculation, FWHM, circular variance |
+| `compute_bar_response_metrics` | `src/analysis/helper/` | Direction selectivity index (vector sum and PD/ND methods) |
+| `compute_FWHM` | `src/analysis/helper/` | Full-width at half-maximum of tuning curve |
+| `compute_circular_var` | `src/analysis/helper/` | Circular variance (0 = sharp tuning, 1 = broad tuning) |
+| `align_data_by_seq_angles` | `src/analysis/helper/` | Reorders data rows to correspond to sequential angles |
+: {.bordered}

@@ -1,0 +1,113 @@
+---
+title: "How to run the protocols"
+---
+
+## Pre-flight checklist
+
+Before running either protocol, ensure:
+
+- [ ] The G4 arena is powered on and connected
+- [ ] MATLAB is open with the `nested_RF_stimulus` source folders on the path
+- [ ] G4_Display_Tools is installed and configured (see [Installation & Setup](ephys_nested_rf_getting-started.qmd))
+- [ ] The `userSettings.m` file points to the correct directories
+- [ ] The PanelsController can connect to the arena (test by running `PanelsController` in the MATLAB Command Window)
+
+___________________________________________________________________________
+
+## Protocol 1 — GUI-based
+
+Protocol 1 is run through the `G4_experiment_conductor` GUI.
+
+::: {.callout-tip}
+A detailed explanation of Protocol 1 can be found [here](ephys_nested_rf_protocol1.qmd).
+:::
+
+### Step-by-step
+
+1. **Open the experiment conductor:** Type `G4_experiment_conductor` in the MATLAB Command Window.
+
+2. **Load the protocol:** Click File → Load, then navigate to the appropriate `.g4p` file within the `protocols/` folder. For the most recent version, use:
+   - Left hemisphere recording: `protocols/bkg4/LHS/protocol1_10kHz_4reps_12px_6px_LHS_2sbkg_200msfl_150msint_07-10-25_15-45-60/`
+   - Right hemisphere recording: `protocols/bkg4/RHS/`
+
+3. **Verify settings:** Check that the `processing_settings.mat` file is present in the protocol folder and that `settings.is_ephys_grid = 1`.
+
+4. **Run the protocol:** Click the Run button. The protocol will take approximately **6 to 7.5 minutes** to complete.
+
+5. **Automatic processing:** After the protocol finishes, the processing functions should run automatically (provided the `processing_settings.mat` is configured correctly). This generates 4 grid plots showing the cell's responses.
+
+___________________________________________________________________________
+
+## Between Protocol 1 and Protocol 2
+
+After P1 completes, you need to determine two things before running P2:
+
+### 1. Identify the `peak_frame`
+
+Examine the **6 pixel flash** grid plots (both bright and dark contrasts). Each subplot shows the cell's voltage response to a flash at that location on the screen. The number above each subplot is the **frame number** of that flash within the pattern.
+
+- Find the subplot with the **largest response** (biggest deflection from baseline).
+- Note the **frame number** above that subplot — this is your `peak_frame`.
+- The `peak_frame` will be used to generate the Protocol 2 stimulus at the same location but with higher spatial resolution. The **preferred contrast** of the cell is determined automatically based on the `peak_frame` value.
+
+::: {.callout-important}
+### Check RF position
+
+If the `peak_frame` corresponds to a flash near the edge of the stimulus area, the 30 x 30 pixel Protocol 2 area may extend beyond the arena boundary. The code will warn you if this is the case. Consider whether Protocol 2 is still worthwhile for edge cases.
+:::
+
+___________________________________________________________________________
+
+## Protocol 2 — Script-based
+
+Protocol 2 is generated and run entirely through a single MATLAB script. Unlike Protocol 1, it does **not** use the `G4_experiment_conductor` GUI.
+
+::: {.callout-tip}
+A detailed explanation of Protocol 2 can be found [here](ephys_nested_rf_protocol2.qmd).
+:::
+
+### Step-by-step
+
+1. **Run the script:** Type `generate_protocol2` in the MATLAB Command Window, or run the script directly.
+
+2. **Fill in the pop-up dialog:** A GUI dialog will appear with the following fields:
+
+   | Field | Description | Example |
+   |:------|:------------|:--------|
+   | **Frame** | The `peak_frame` number from the P1 6px grid plot with the largest response | `42` |
+   | **Side** | Which side of the arena was used in P1 (`L` for left, `R` for right) | `L` |
+   | **Age** | Age of the fly in days (1-8, or NaN if unknown) | `3` |
+   | **Strain** | Fly genotype — select from the dropdown list | `42F06_T4T5_control` |
+   : {.bordered}
+
+::: {.callout-important}
+If a new strain is being run that is not in the dropdown list, add it to the field `Items` for the variable `strainDropdown` within the script [`get_input_parameters.m`](https://github.com/reiserlab/tutl-T4/blob/main/src/protocol_generation/get_input_parameters.m).
+:::
+
+3. **Wait for generation:** The script will:
+   - Convert the `peak_frame` to screen coordinates using `patt_frame_to_coord.m`
+   - Determine the ON/OFF contrast from the peak_frame value
+   - Generate all flash patterns, bar patterns, and position functions
+   - Assemble the experiment into `currentExp.mat`
+   - Create a new timestamped folder (format `YYYY_MM_DD_HH_MM`)
+
+4. **The protocol runs automatically:** After generation, the script calls `run_protocol2()` which connects to the PanelsController and runs all stimuli with 3 repetitions. The protocol takes approximately **20 to 25 minutes**.
+
+5. **During the experiment:** The arena will cycle through the stimulus sequence (flashes → bar sweeps at different speeds → bar flashes) three times. You should see the arena LEDs changing as each stimulus is presented.
+
+6. **Post-experiment:** After completion:
+   - TDMS log files are automatically converted to `.mat` format
+   - Metadata is saved to the experiment folder
+   - Experiment details are exported to the Google Sheets log (unless strain is set to `test`)
+   - The script returns the `peak_frame` value for the inverse contrast, so you can run P2 again with the opposite contrast if desired
+
+::: {.callout-note}
+### Running both contrasts
+Protocol 2 only presents one contrast (ON or OFF) per run. After the first run completes, the script returns the `peak_frame` value that would generate the protocol at the same location with the **inverse contrast**. You can use this to run P2 a second time to collect data for both contrasts.
+:::
+
+___________________________________________________________________________
+
+## After Protocol 2
+
+Once Protocol 2 is complete, you can analyse the data using `process_protocol2()`. See [How to analyse P2](ephys_nested_rf_how-to-analyse-p2.qmd) for instructions.

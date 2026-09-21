@@ -1,0 +1,251 @@
+/*-- scss:defaults --*/
+
+// Dark mode color overrides
+$body-bg: #1a1a1a;
+$body-color: #e8e8e8;
+$link-color: #6db3f2;
+$link-hover-color: #9fcbf7;
+
+// Headings
+$headings-color: #ffffff;
+
+// Code
+$code-bg: #2d2d2d;
+$code-color: #e8e8e8;
+$pre-bg: #2d2d2d;
+$pre-color: #e8e8e8;
+$pre-border-color: #444444;
+
+// Sidebar
+$sidebar-bg: #1a1a1a;
+
+// Tables
+$table-bg: #1a1a1a;
+$table-border-color: #444444;
+$table-striped-bg: #252525;
+
+/*-- scss:rules --*/
+
+/* Main content area */
+body {
+    background-color: $body-bg;
+    color: $body-color;
+}
+
+#quarto-content {
+    background-color: $body-bg;
+}
+
+.page-columns {
+    background-color: $body-bg;
+}
+
+main.content {
+    background-color: $body-bg;
+    color: $body-color;
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: $sidebar-bg;
+    color: $body-color;
+}
+
+.sidebar-navigation {
+    background-color: $sidebar-bg;
+}
+
+.sidebar-item-text {
+    color: $body-color;
+}
+
+.sidebar-item-container:hover {
+    background-color: #333333;
+}
+
+/* Links */
+a {
+    color: $link-color;
+}
+
+a:hover {
+    color: $link-hover-color;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: $headings-color;
+}
+
+/* Code blocks */
+pre {
+    background-color: $pre-bg;
+    border-color: $pre-border-color;
+}
+
+code {
+    background-color: $code-bg;
+    color: $code-color;
+}
+
+pre code {
+    color: $code-color;
+}
+
+/* Inline code */
+p code, li code {
+    background-color: #333333;
+    color: #f0f0f0;
+}
+
+/* Tables */
+table {
+    color: $body-color;
+}
+
+th {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+td {
+    background-color: $table-bg;
+    border-color: $table-border-color;
+}
+
+tr:nth-child(even) td {
+    background-color: $table-striped-bg;
+}
+
+/* Table of contents */
+#TOC {
+    background-color: $sidebar-bg;
+}
+
+.toc-actions a {
+    color: $link-color;
+}
+
+/* Alert boxes */
+.error {
+    background-color: #3d1a1a;
+    border-left-color: #cc0000;
+    color: #ffcccc;
+}
+
+.warning {
+    background-color: #3d3d1a;
+    border-left-color: #cccc00;
+    color: #ffffcc;
+}
+
+.info {
+    background-color: #1a3d1a;
+    border-left-color: #00cc00;
+    color: #ccffcc;
+}
+
+/* Keyboard styling */
+kbd, .kbd {
+    color: #e8e8e8;
+    background: #444444;
+    box-shadow: inset 0 0 25px #555555, 0 1px 0 #333333, 0 2px 0 #222222, 0 2px 3px #000;
+    text-shadow: none;
+}
+
+.gui-btn {
+    color: #e8e8e8;
+    background: #444444;
+    box-shadow: inset 0 0 25px #555555, 0 1px 0 #333333, 0 2px 0 #222222, 0 2px 3px #000;
+    text-shadow: none;
+}
+
+.gui-txt {
+    color: #6db3f2;
+    background: #333333;
+}
+
+/* Figure captions */
+.ifr figcaption,
+.ifr_center figcaption {
+    color: #aaaaaa;
+}
+
+.ifr figcaption::before,
+.ifr_center figcaption::before {
+    color: #aaaaaa;
+}
+
+figure.ifr,
+figure.ifr_center {
+    border-bottom-color: #444444;
+}
+
+/* Blockquotes */
+blockquote {
+    background-color: #252525;
+    border-left-color: #555555;
+    color: #cccccc;
+}
+
+/* Horizontal rules */
+hr {
+    border-color: #444444;
+}
+
+/* Navbar in dark mode - keep it dark */
+.navbar {
+    background-color: #1a1a1a !important;
+}
+
+/* Table styling - bordered tables with thin lines */
+table.bordered {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+table.bordered th,
+table.bordered td {
+    border: 1px solid #555555;
+    padding: 0.5rem 0.75rem;
+    vertical-align: middle;
+}
+
+table.bordered th {
+    background-color: #333333;
+    font-weight: 600;
+    text-align: left;
+    color: #ffffff;
+}
+
+table.bordered td {
+    text-align: left;
+    background-color: $table-bg;
+}
+
+/* Right-align numeric columns (Value columns) */
+table.bordered td:last-child,
+table.bordered th:last-child {
+    text-align: right;
+}
+
+/* First column left-aligned */
+table.bordered td:first-child,
+table.bordered th:first-child {
+    text-align: left;
+}
+
+/* Striped rows */
+table.striped tbody tr:nth-child(even) td {
+    background-color: $table-striped-bg;
+}
+
+table.striped tbody tr:nth-child(odd) td {
+    background-color: $table-bg;
+}
+
+/* Hide the published date at the top of pages */
+.quarto-title-meta {
+    display: none;
+}

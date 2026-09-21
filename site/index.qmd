@@ -1,0 +1,16 @@
+---
+title: "tutl-T4: stimulus and analysis documentation"
+---
+
+This site documents the stimulus protocols and analysis code used for the T4/T5 patch-electrophysiology experiments in Sanfilippo et al. (Zipursky and Reiser labs). The code lives in the [reiserlab/tutl-T4](https://github.com/reiserlab/tutl-T4) repository, a fork of [leburnett/nested_RF_stimulus](https://github.com/leburnett/nested_RF_stimulus).
+
+The pages cited in the manuscript:
+
+- [Protocol 2](Ephys/ephys_nested_rf_protocol2.qmd) — the stimulus set presented within a 37.5° × 37.5° window around each cell's receptive field: square flashes, bar sweeps in 16 directions, and bar flashes along eight axes.
+- [Bar sweep analysis](Ephys/ephys_nested_rf_bar-sweep-analysis.qmd) — directional tuning, DSI and aspect ratio.
+- [Bar flash analysis](Ephys/ephys_nested_rf_bar-flash-analysis.qmd) — 1D receptive-field profiles along the PD–ND and orthogonal axes.
+- [Flash analysis](Ephys/ephys_nested_rf_flash-analysis.qmd) — receptive-field maps from square flashes.
+
+Start at the [Electrophysiology overview](Ephys/index.qmd) for the full protocol documentation, how-to guides and troubleshooting.
+
+The documentation was written by Laura Burnett (Reiser Lab, HHMI Janelia Research Campus) and is mirrored here from [leburnett/reiser-documentation](https://github.com/leburnett/reiser-documentation) so that the pages cited in the paper remain available alongside the code.

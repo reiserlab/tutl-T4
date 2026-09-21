@@ -20,3 +20,7 @@ src/stimulus_generation/set_stimulus_params.asv
 /protocols/RHS/protocol1_10kHz_4reps_12px_6px_RHS_2sbkg_200msfl_50msint_04-08-25_08-08-42/[0-9]*/
 /protocols/RHS2/protocol1_10kHz_4reps_12px_6px_RHS2_2sbkg_200msfl_50msint_81_180_05-05-25_16-18-66/[0-9]*/
 session-notes.md
+
+# Quarto site build outputs
+site/_site/
+site/.quarto/

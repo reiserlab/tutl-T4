@@ -1,0 +1,29 @@
+---
+title: "Rig Specs"
+---
+
+![<b>Experiment Rig: </b> G4 LED - Ephys arena with a cartoon representation of the position of the fly within the arena. For many protocols, visual stimuli are only presented over 1/2 of the arena screen, ipsilateral to the location of the recorded cell.](../assets/imgs/ephys/nested_RF_stimulus/setup.png){.ifr_center}
+
+
+| Parameter | Value |
+|:-----|:----------|
+| Room | 2E.270.3 | 
+| Arena circumference (panels) | 18 | 
+| Pixels per panel |256 (16 x 16) | 
+| Panels (width) | 12 | 
+| Panels (height) | 3 | 
+| Pattern size (pixels) | 192 x 48 | 
+| Degrees per pixel | 1.25 | 
+| Arena size (Degrees of visual field) | 240 x 60 degrees| 
+| LED wavelength | Green (xnm) | 
+| MATLAB version | R2023a | 
+| Panel version | - | 
+: {.bordered}
+
+::: {.callout-important}
+Leftmost panel is not used, so there are 11 panels in total. When making patterns, the image will start being presented from pixel 17. Pixels 1-16 represent the missing panel.
+:::
+
+::: {.callout-note}
+The arena can be tilted in elevation depending on how the fly is positioned in the rig. Make sure to keep a note of the angle of the arena.
+:::

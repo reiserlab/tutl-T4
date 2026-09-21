@@ -3,6 +3,8 @@
 Generates, runs and analyses two-stage receptive-field and direction-selectivity protocols
 for patch-electrophysiology recordings of *Drosophila* T4/T5 neurons on the G4 LED arena.
 
+**Documentation:** protocol and analysis pages are published at <https://reiserlab.github.io/tutl-T4/> (mirrored from `leburnett/reiser-documentation`).
+
 **Version** README v1 · **Status** active · **Last verified** not yet verified
 
 ## What this does

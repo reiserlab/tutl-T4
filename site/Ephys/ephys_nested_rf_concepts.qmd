@@ -1,0 +1,120 @@
+---
+title: "Key Concepts"
+---
+
+This page explains the foundational concepts and terminology used throughout the Nested RF Protocol documentation. If you are new to this system, read this before diving into the protocol descriptions or analysis pages.
+
+## The G4 LED arena
+
+The G4 LED arena is a cylindrical array of LED panels that surrounds the fly, providing a programmable visual display. The arena in the electrophysiology rig has the following specifications (see also [Rig Specs](ephys_rig_specs.qmd)):
+
+::: {.callout-important}
+### Missing panel
+The leftmost panel (from the fly's perspective) is not installed. This means pixels 1-16 in the x-axis represent the missing panel and are never used for stimuli. Stimulus patterns start from **pixel 17**.
+:::
+
+
+## Coordinate system
+
+The arena uses a pixel-based coordinate system:
+
+- **X-axis (columns):** 1 to 192 pixels, left to right from the fly's perspective. Usable range starts at pixel 17 due to the missing panel.
+- **Y-axis (rows):** 1 to 48 pixels, bottom to top.
+- **Visual angle:** Each pixel subtends 1.25 degrees of visual angle. So a 12 pixel square covers 15 degrees, and a 6 pixel square covers 7.5 degrees.
+
+### Left and right hemispheres
+
+Many protocols present stimuli on only one half of the arena, ipsilateral to the recording electrode:
+
+- **LHS (Left Half of Screen):** Pixels 17 to 112 in x (96 pixels = 6 panels wide)
+- **RHS (Right Half of Screen):** Pixels 81 to 180 or 97 to 192 in x (depending on version)
+
+The hemisphere used depends on which side the recording is being made from.
+
+## Patterns and position functions
+
+The G4 display system uses two types of files to control what is shown on the arena:
+
+### Patterns (`.pat` files)
+
+A pattern is a collection of **frames** — each frame is a 192 x 48 pixel image that can be displayed on the arena. A pattern file contains many frames, each representing a different visual stimulus or stimulus position. For example:
+
+- In Protocol 1, each frame contains a single flash at a specific location on the screen.
+- In Protocol 2, bar patterns contain frames with a bar at different positions across the arena.
+
+Patterns are generated as `.mat` files and compiled to `.pat` files for the arena controller.
+
+### Position functions (`.pfn` files)
+
+A position function tells the arena controller **which frame of a pattern to display at each time point**. It controls the temporal sequence of the stimulus. For example:
+
+- A **static position function** holds the same frame for a specified duration (used for flash stimuli and background intervals).
+- A **sawtooth position function** sweeps through frames linearly (used for moving bar stimuli — the bar appears to move across the screen).
+
+The combination of a pattern and a position function defines a complete stimulus condition.
+
+## The `peak_frame` concept
+
+The `peak_frame` is the central concept linking Protocol 1 to Protocol 2.
+
+In Protocol 1, the cell is stimulated with flashes at every grid position on the screen. Each flash position corresponds to a specific **frame number** in the pattern file. After P1 analysis, the frame number that elicited the largest response identifies the approximate receptive field centre.
+
+This frame number is the `peak_frame`. When entered into `generate_protocol2()`, the function `patt_frame_to_coord.m` converts it to physical screen coordinates [x, y] by:
+
+1. Loading the 6 pixel pattern from Protocol 1
+2. Finding which pixels in that frame are non-background (i.e., the flash location)
+3. Computing the centroid (median x, median y) of those pixels
+4. Determining whether it was an ON or OFF flash based on the pixel intensity
+
+These coordinates are then used to centre all Protocol 2 stimuli around that location.
+
+## ON vs OFF contrast
+
+Visual stimuli can be either brighter or darker than the background:
+
+- **ON (bright) contrast:** Flash intensity = 15/15 (maximum), against a background of 4/15. This represents an increment in light (positive contrast).
+- **OFF (dark) contrast:** Flash intensity = 0/15 (LED off), against a background of 4/15. This represents a decrement in light (negative contrast).
+
+This distinction is biologically relevant because different neuron types in the fly visual system respond preferentially to different contrasts:
+
+- **T4 cells** respond to ON (bright) contrast — they are part of the ON motion pathway.
+- **T5 cells** respond to OFF (dark) contrast — they are part of the OFF motion pathway.
+
+Protocol 1 presents both contrasts to determine the cell's preference. Protocol 2 then presents only the preferred contrast.
+
+## Receptive fields
+
+A **receptive field (RF)** is the region of visual space where light stimuli affect a neuron's response. The Nested RF Protocol maps the RF using small flashing squares and characterises two components:
+
+- **Excitatory lobe:** The region where stimuli cause depolarisation (increased firing). This is the core of the RF.
+- **Inhibitory lobe:** The region where stimuli cause hyperpolarisation (decreased firing). This is often adjacent to the excitatory lobe and contributes to direction selectivity.
+
+The analysis fits 2D Gaussian functions to both lobes to quantify the RF size, shape, and orientation.
+
+## Direction selectivity
+
+**Direction selectivity (DS)** means a neuron responds more strongly to visual motion in one direction (the **preferred direction**, PD) than to motion in the opposite direction (the **null direction**, ND).
+
+The Nested RF Protocol measures DS using moving bar stimuli in 16 directions. The responses are visualised as a **polar plot**, where the distance from the centre represents the response magnitude for each direction. A strongly direction-selective cell will have a polar plot elongated in one direction.
+
+Key metrics:
+
+- **Vector sum:** The preferred direction and its strength are computed by treating each direction's response as a vector and summing them. The angle of the resultant vector is the preferred direction, and its normalised length (0-1) is the **magnitude** of direction selectivity.
+- **Circular variance (CV):** 0 = all responses in one direction (sharp tuning), 1 = uniform responses (no tuning).
+- **FWHM:** Full-width at half-maximum of the tuning curve.
+
+## Glossary of key parameters
+
+| Parameter | Description |
+|:----------|:------------|
+| `gs_val` | Greyscale value — the intensity level used for the background (e.g., 4 means 4/15 intensity) |
+| `px_crop` / `px_crop_flash` / `px_crop_bar` | The side length (in pixels) of the stimulus area in Protocol 2 (typically 30) |
+| `on_off` | Whether the protocol uses bright ('on') or dark ('off') stimuli |
+| `flash_dur` | Duration of each flash stimulus in seconds |
+| `int_dur` / `interval_dur` | Duration of the inter-flash interval in seconds |
+| `dps` | Degrees per second — the speed of a moving bar stimulus |
+| `peak_frame` | The frame number from Protocol 1 that corresponds to the RF centre |
+| `px_intensity` | Array of pixel intensity values [background, dark, bright] |
+| `flash_sz` / `px_flash` | The size of flash stimuli in pixels |
+| `n_reps` | Number of repetitions of the stimulus set |
+: {.bordered}
