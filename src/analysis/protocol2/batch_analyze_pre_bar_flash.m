@@ -33,6 +33,8 @@ function results = batch_analyze_pre_bar_flash(data_root, opts)
 %       .date_str          - Experiment date string
 %       .strain            - Strain from metadata
 %       .frame             - Frame number from metadata
+%       .pd_direction_vs   - continuous vector-sum preferred direction (deg), same as
+%                            .pd_direction here (this batch never snapped)
 %       .metadata_mismatch - true if Strain / Frame in metadata disagree with
 %                            the directory-based classification (warning issued)
 %       .is_on             - true for ON/T4 cells
@@ -264,6 +266,7 @@ function r = process_single_cell(exp_folder, Tbl, opts, ei)
     if r.pd_direction < 0
         r.pd_direction = r.pd_direction + 360;
     end
+    r.pd_direction_vs = r.pd_direction;   % continuous vector-sum PD (same field name as the late batch)
 
     % --- Direction selectivity metrics ---
     [r.sym_ratio, r.dsi_vector, r.dsi_pdnd, ~] = ...
