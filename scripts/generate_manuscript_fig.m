@@ -13,12 +13,17 @@ function fig_combined = generate_manuscript_fig(mode, opts)
 %   struct with fields:
 %       .data_root   - data_root (default '/Users/reiserm/Documents/ttl_1DRF')
 %       .skip_export - true to suppress PDF/PNG export (default false)
+%       .show_fwhm   - FWHM bars on the flash depolarization panels (default true)
+%       .pool_test   - 'pooled' (default) or 'percell'; see GENERATE_MANUSCRIPT_FIG_EF
 %
 %   See also GENERATE_MANUSCRIPT_FIG_EF, GENERATE_MANUSCRIPT_FIG_DS.
 
 if nargin < 2, opts = struct(); end
 if ~isfield(opts, 'data_root'),   opts.data_root   = '/Users/reiserm/Documents/ttl_1DRF'; end
 if ~isfield(opts, 'skip_export'), opts.skip_export = false; end
+if ~isfield(opts, 'show_fwhm'),   opts.show_fwhm   = true; end
+if ~isfield(opts, 'pool_test'),   opts.pool_test   = 'pooled'; end
+if ~isfield(opts, 'fwhm_method'), opts.fwhm_method = 'interp'; end
 
 switch lower(mode)
     case 'main'
@@ -39,7 +44,13 @@ out_dir   = fullfile(data_root, 'manuscript_figures');
 if ~isfolder(out_dir) && ~opts.skip_export, mkdir(out_dir); end
 
 %% ===================== Generate sub-figures =============================
-sub_opts = struct('data_root', data_root, 'skip_export', true);
+sub_opts = struct('data_root', data_root, 'skip_export', true, ...
+    'show_fwhm', opts.show_fwhm, 'pool_test', opts.pool_test, 'fwhm_method', opts.fwhm_method);
+variant_tag = '';
+if ~opts.show_fwhm, variant_tag = [variant_tag '_noFWHM']; end
+if strcmpi(opts.pool_test, 'percell'), variant_tag = [variant_tag '_percell']; end
+if strcmpi(opts.fwhm_method, 'gauss'), variant_tag = [variant_tag '_gaussFWHM']; end
+out_tag = [out_tag variant_tag];
 fprintf('\n========== Generating flash sub-figure (axis_mode=%s) ==========\n', axis_mode);
 fig_ef   = generate_manuscript_fig_ef(axis_mode, sub_opts);
 fprintf('\n========== Generating bar-sweep sub-figure (speed=%d) ==========\n', speed_dps);

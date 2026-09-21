@@ -108,8 +108,11 @@ cache_tag = sprintf('gauss_999_%ddps', SPEED_DPS);
 if ~SUBTRACT_BASELINE
     cache_tag = [cache_tag '_abs'];
 end
+% CACHE_VERSION guards against silently reusing a cache built by older code
+% (bump whenever extraction, alignment or per-cell labelling changes).
+CACHE_VERSION = 'v2';   % v2: canonical peak angle labels (2026-09-20)
 cache_file = fullfile(data_root, 'population_results', ...
-    sprintf('ring_of_traces_cache_%s.mat', cache_tag));
+    sprintf('ring_of_traces_cache_%s_%s.mat', cache_tag, CACHE_VERSION));
 
 if isfile(cache_file)
     fprintf('Loading cached ring-of-traces data (%s)...\n', cache_tag);
@@ -270,8 +273,13 @@ else
     end
 
     % --- Recompute peak amplitudes using current POLAR_PERCENTILE ---
+    % Angle labels are the canonical PD-aligned frame of traces_aligned (row 5 = PD,
+    % rows 1/9 orthogonal, row 13 = ND; see extract_and_align_traces). The batch
+    % max_v_aligned(:,1) column must NOT be used here: for PD = 292.5 deg its 0-deg
+    % label wraps to 2*pi in find_PD_and_order_idx and sorts last, which made
+    % compute_ar read rows 4/1/8 instead of 5/1/9 for six cells (fixed 2026-09-20).
     for ci = 1:n_cells
-        angles = all_cells(ci).max_v_aligned(:, 1);
+        angles = deg2rad((0:15)' * 22.5);
         peak_amps = NaN(16, 1);
         for di = 1:16
             tr = all_cells(ci).traces_aligned{di};
@@ -495,15 +503,20 @@ for ci = 1:n_cells_total
         f_data_v = Log_v.ADC.Volts(1, :);
         v_data_v = Log_v.ADC.Volts(2, :) * 10;
 
+        % Use the sweeps of THIS figure's speed for every cell (2026-09-20 fix;
+        % previously late cells pooled 28 + 56 dps while early cells used 28 only).
         if strcmp(c.batch, 'late')
             bar_data_v = parse_bar_data(f_data_v, v_data_v);
+            use_rows_v = ROW_OFFSET_LATE + (1:16);          % rows 1-16 = 28 dps, 17-32 = 56 dps
         else
-            bar_data_v = parse_bar_data_pre_bf(f_data_v, v_data_v);
+            bar_data_v = parse_bar_data_pre_bf(f_data_v, v_data_v, PRE_BF_SPEED);
+            use_rows_v = 1:16;
         end
-
-        % Pool slow (rows 1-16) + medium (rows 17-32) bar traces
-        n_rows_v = size(bar_data_v, 1);
-        use_rows_v = 1:min(32, n_rows_v);
+        use_rows_v = use_rows_v(use_rows_v <= size(bar_data_v, 1));
+        % Both parsers pad 9000 samples (900 ms) before bar onset and after bar offset.
+        % Pre-sweep window: 800 ms before onset. During-sweep window: onset to offset
+        % exactly (2026-09-20 fix; previously 7000 were trimmed, leaving 200 ms of blank
+        % screen inside the "during sweep" window).
         pre_v = []; stim_v = [];
         for d = use_rows_v
             tr = bar_data_v{d, 4};
@@ -511,7 +524,7 @@ for ci = 1:n_cells_total
             tr = tr(:)'; tlen = numel(tr);
             pre_end = min(9000, tlen);
             pre_v = [pre_v, tr(1000:pre_end)]; %#ok<AGROW>
-            stim_end = tlen - 7000;
+            stim_end = tlen - 9000;
             if stim_end > 9001
                 stim_v = [stim_v, tr(9001:stim_end)]; %#ok<AGROW>
             end
@@ -524,6 +537,15 @@ for ci = 1:n_cells_total
     end
 end
 fprintf('  Voltage extracted: %d / %d cells\n', sum(~isnan(voltage_pre)), n_cells_total);
+% Diagnostics: group medians and rank-sum p (T4 ctrl vs tutl, T5 ctrl vs tutl, T4 ctrl vs T5 ctrl)
+vg = {[all_cells.is_on] & ~[all_cells.is_ttl], [all_cells.is_on] & [all_cells.is_ttl], ...
+      ~[all_cells.is_on] & ~[all_cells.is_ttl], ~[all_cells.is_on] & [all_cells.is_ttl]};
+for vv = {voltage_pre, 'Vm pre-sweep   '; voltage_stim, 'Vm during sweep'}'
+    x = vv{1}(:)';
+    fprintf('  %s (%d dps): medians %s mV | p T4 %.4f, T5 %.4f, ctrl/ctrl %.4f\n', vv{2}, SPEED_DPS, ...
+        mat2str(round(cellfun(@(m) median(x(m), 'omitnan'), vg), 2)), ...
+        ranksum(x(vg{1}), x(vg{2})), ranksum(x(vg{3}), x(vg{4})), ranksum(x(vg{1}), x(vg{3})));
+end
 
 % Build voltage struct array matching draw_boxplot_panel expectations
 voltage_combined = struct([]);
