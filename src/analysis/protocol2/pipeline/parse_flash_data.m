@@ -1,4 +1,4 @@
-function [data_comb, cmap_id, var_across_reps, var_within_reps, diff_mean, max_data, min_data] = parse_flash_data(f_data, v_data, on_off, slow_fast, px_size, PROJECT_ROOT, filter_idx)
+function [data_comb, cmap_id, var_across_reps, var_within_reps, diff_mean, max_data, min_data, mean_traces] = parse_flash_data(f_data, v_data, on_off, slow_fast, px_size, PROJECT_ROOT, filter_idx)
 % PARSE_FLASH_DATA  Extract and analyze flash stimulus responses from recording.
 %
 %   [DATA_COMB, CMAP_ID, VAR_ACROSS, VAR_WITHIN, DIFF_MEAN, MAX_DATA, MIN_DATA]
@@ -28,6 +28,8 @@ function [data_comb, cmap_id, var_across_reps, var_within_reps, diff_mean, max_d
 %     diff_mean       - NxN matrix of max-min response difference
 %     max_data        - NxN matrix of 98th percentile of mean response
 %     min_data        - NxN matrix of 2nd percentile of mean response
+%     mean_traces     - (optional) NxNxT array: the 3-rep mean, median-referenced
+%                      voltage trace per grid position (window as extracted below)
 %
 %   RESPONSE CLASSIFICATION:
 %     Excitatory: |max| >= |min| AND diff_resp > 3
@@ -35,7 +37,7 @@ function [data_comb, cmap_id, var_across_reps, var_within_reps, diff_mean, max_d
 %     Neutral: response below threshold
 %
 %   TIMING:
-%     Extracts 7s window per flash (1s before, flash, 5s after)
+%     Extracts a 0.7 s window per flash (100 ms before the flash frame, 160 ms flash, ~440 ms after)
 %     3 repetitions averaged for final response estimate
 %
 %   GRID STRUCTURE:
@@ -223,6 +225,7 @@ function [data_comb, cmap_id, var_across_reps, var_within_reps, diff_mean, max_d
     
         mean_data_flash = mean(data_flash);
         n_vals = size(mean_data_flash, 2);
+        if nargout >= 8 && i == 1, mean_traces = NaN(n_rows_cols, n_rows_cols, n_vals); end   % optional 8th output: mean trace per square
     
         % % % % % % % TODO - - -- update this based on the 1000
         % datapoints before the start of the flash now. 
@@ -273,6 +276,7 @@ function [data_comb, cmap_id, var_across_reps, var_within_reps, diff_mean, max_d
         end
 
         data_comb(rows, cols) = val;
+        if nargout >= 8, mean_traces(rows, cols, :) = mean_data_flash; end
         cmap_id(rows, cols) = cm;
         var_across_reps(rows, cols) = mean_cv_across_trials;
         var_within_reps(rows, cols) = mean_cv_within_trial;

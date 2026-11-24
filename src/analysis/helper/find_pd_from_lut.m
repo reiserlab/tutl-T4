@@ -67,6 +67,7 @@ function pd_info = find_pd_from_lut(max_v, lut_directions, lut_orientations, ...
 
     pd_data_row   = plot_order(pd_subplot_idx);
     pd_direction  = lut_directions(pd_data_row);
+    pd_direction_vs = mod(rad2deg(resultant_angle), 360);   % continuous vector-sum angle, before snapping
     pd_orientation = lut_orientations(pd_data_row);
     pd_pattern    = lut_patterns(pd_data_row);
     pd_function   = lut_functions(pd_data_row);
@@ -140,6 +141,7 @@ function pd_info = find_pd_from_lut(max_v, lut_directions, lut_orientations, ...
     % Pack into output struct
     pd_info.resultant_angle   = resultant_angle;
     pd_info.pd_direction      = pd_direction;
+    pd_info.pd_direction_vs = pd_direction_vs;
     pd_info.pd_orientation    = pd_orientation;
     pd_info.pd_pattern        = pd_pattern;
     pd_info.pd_function       = pd_function;

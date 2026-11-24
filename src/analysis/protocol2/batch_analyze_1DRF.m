@@ -36,7 +36,8 @@ function results = batch_analyze_1DRF(data_root, opts)
 %                            or 'off_ttl'
 %       .max_v_aligned     - 16x2 PD-aligned [angles, responses] from
 %                            find_PD_and_order_idx
-%       .pd_direction      - Preferred direction in degrees
+%       .pd_direction      - Preferred direction in degrees (nearest stimulus direction)
+%       .pd_direction_vs   - Continuous vector-sum preferred direction in degrees
 %       .pd_orientation    - Bar orientation at PD in degrees
 %       .pd_flash_bl       - 11xN baseline-subtracted mean flash traces
 %                            along PD-ND axis
@@ -279,6 +280,7 @@ function r = process_single_cell(exp_folder, Tbl, opts)
         lut_patterns, lut_functions, opts.plot_order, Tbl, opts.pattern_offset);
 
     r.pd_direction  = pd_info.pd_direction;
+    r.pd_direction_vs = pd_info.pd_direction_vs;   % continuous vector-sum PD (deg), used by the square-flash RF fits
     r.pd_orientation = pd_info.pd_orientation;
 
     % Parse bar flash data (prop_int = 0.5 matches the original protocol-2
