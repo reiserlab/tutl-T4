@@ -10,6 +10,7 @@ website:
   title: "tutl-T4 · nested RF protocol"
   description: "Stimulus protocols and analysis documentation for T4/T5 patch electrophysiology on the G4 LED arena (Reiser Lab, HHMI Janelia). Companion to Sanfilippo et al."
   page-footer:
+    left: "[Reiser Lab](https://reiserlab.org/), HHMI Janelia"
     center: "Documentation written by Laura Burnett; mirrored from [leburnett/reiser-documentation](https://github.com/leburnett/reiser-documentation). Page generated on {{< meta buildtime >}}"
   repo-url: https://github.com/reiserlab/tutl-T4
   favicon: /assets/favicon/favicon.ico
